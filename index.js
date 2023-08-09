@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { Player } = require('discord-player');
-const { SpotifyExtractor, SoundCloudExtractor } = require('@discord-player/extractor');
+const { SpotifyExtractor, SoundCloudExtractor, YouTubeExtractor } = require('@discord-player/extractor');
 
 const lib = require("./lib");
 
@@ -13,11 +13,10 @@ client.player = new Player(client);
 client.language = new lib.localisation.language(process.env.LANGUAGE);
 
 (async () => {
+    await client.player.extractors.load
     await client.player.extractors.loadDefault();
-    await client.player.extractors.register(SpotifyExtractor, {});
-    await client.player.extractors.register(SoundCloudExtractor, {});
     client.player.events.on('playerStart', (queue, track) => {
-        queue.metadata.channel.send(`${client.language.getText("startedPlaying")}: **${track.title}**!`);
+        queue.metadata.channel.send(`${client.language.getText("startedPlaying")}: \`\`${track.title}\`\` @ ${track.source}`);
     });
 })();
 

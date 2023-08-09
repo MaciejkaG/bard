@@ -5,7 +5,6 @@
     "startedPlaying": "Rozpoczęto odtwarzanie",
     "trackAddedToQueue": "Dodano do kolejki",
     "volumeChanged": "Zmieniono głośność na",
-    "loopModeSwtich": "Tryb pętli jest teraz",
-    "loopModeEnabled": "Włączony",
-    "loopModeDisabled": "Wyłączony"
+    "trackSkipped": "Pominięto piosenkę",
+    "loopModeSet": "Zmieniono tryb pętli"
 }

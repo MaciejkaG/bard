@@ -1,4 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { useQueue } = require("discord-player");
+const { YouTubeExtractor } = require("@discord-player/extractor");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,12 +11,12 @@ module.exports = {
         })
         .setDMPermission(false)
         .addStringOption(option =>
-			option
-				.setName('query')
+            option
+                .setName('query')
                 .setNameLocalizations({
                     pl: 'zapytanie',
                 })
-				.setDescription('Query to search')
+                .setDescription('Query to search')
                 .setDescriptionLocalizations({
                     pl: 'Zapytanie do wyszukania',
                 })
@@ -30,11 +32,12 @@ module.exports = {
             const { track } = await interaction.client.player.play(channel, query, {
                 nodeOptions: {
                     metadata: interaction
-                }
+                },
+                fallbackSearchEngine: 'youtube'
             });
-            return interaction.followUp(`${interaction.client.language.getText("trackAddedToQueue")}: **${track.title}**`);
+            return interaction.followUp(`${interaction.client.language.getText("trackAddedToQueue")}: \`\`${track.title}\`\` @ ${track.source}`);
         } catch (e) {
-            return interaction.followUp(`${interaction.client.language.getText("somethingWentWrong")}: ${e}`);
+            return interaction.followUp(`${interaction.client.language.getText("somethingWentWrong")}: \`\`\`${e}\`\`\``);
         }
     },
 };
