@@ -1,0 +1,11 @@
+{
+    "welcome": "Hi! I'm the best music Discord bot you could find on GitHub!",
+    "somethingWentWrong": "Something went wrong",
+    "notInVoice": "You aren't in a voice channel right now!",
+    "startedPlaying": "Started playing",
+    "trackAddedToQueue": "Added to queue",
+    "volumeChanged": "Volume changed to",
+    "loopModeSwtich": "The loop mode is now",
+    "loopModeEnabled": "Enabled",
+    "loopModeDisabled": "Disabled"
+}

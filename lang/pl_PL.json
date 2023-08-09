@@ -1,0 +1,11 @@
+{
+    "welcome": "Cześć! Jestem najlepszym botem Discord do muzyki jakiego mogłeś znaleźć na Githubie!",
+    "somethingWentWrong": "Coś poszło nie tak",
+    "notInVoice": "Aktualnie nie jesteś na kanale głosowym!",
+    "startedPlaying": "Rozpoczęto odtwarzanie",
+    "trackAddedToQueue": "Dodano do kolejki",
+    "volumeChanged": "Zmieniono głośność na",
+    "loopModeSwtich": "Tryb pętli jest teraz",
+    "loopModeEnabled": "Włączony",
+    "loopModeDisabled": "Wyłączony"
+}
