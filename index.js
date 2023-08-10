@@ -6,19 +6,12 @@ const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { Player } = require('discord-player');
 const { SpotifyExtractor, SoundCloudExtractor, YouTubeExtractor } = require('@discord-player/extractor');
 
-const lib = require("./lib");
+const lib = require("./utils");
+const dashboard = require("./dashboard");
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
 client.player = new Player(client);
 client.language = new lib.localisation.language(process.env.LANGUAGE);
-
-const express = require("express");
-
-const app = express();
-
-app.listen(process.env.PORT, () => {
-  console.log(`Server listening on ${process.env.PORT}`);
-});
 
 (async () => {
     await client.player.extractors.load
@@ -32,6 +25,7 @@ client.commands = new Collection();
 
 const foldersPath = path.join(__dirname, 'cmd');
 const commandFolders = fs.readdirSync(foldersPath);
+dashboard.main(client);
 
 for (const folder of commandFolders) {
     const commandsPath = path.join(foldersPath, folder);
