@@ -12,6 +12,14 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBit
 client.player = new Player(client);
 client.language = new lib.localisation.language(process.env.LANGUAGE);
 
+const express = require("express");
+
+const app = express();
+
+app.listen(process.env.PORT, () => {
+  console.log(`Server listening on ${process.env.PORT}`);
+});
+
 (async () => {
     await client.player.extractors.load
     await client.player.extractors.loadDefault();
