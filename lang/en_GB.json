@@ -18,6 +18,8 @@
     "warning": "Warning",
     "error": "Error",
     "backHome": "Go back to Home",
+    "connectionError": "Connection error",
     "authorisationError": "An authorisation error occured, try again later.",
-    "permissionError": "You aren't permitted to use this dashboard."
+    "permissionError": "You aren't permitted to use this dashboard.",
+    "valueError": "A value error occured."
 }

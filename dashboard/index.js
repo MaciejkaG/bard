@@ -87,7 +87,7 @@ module.exports = {
                             res.send(constructMessagePage(lang.getText("permissionError"), 2));
                         } else {
                             var template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/dashboard.html'), 'utf8'));
-                            res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed") }));
+                            res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed"), connectionError: lang.getText("connectionError") }));
                         }
                     })
 
@@ -98,64 +98,146 @@ module.exports = {
 
             app.post('/api/music/get-current-track', (req, res) => {
                 if (checkLoggedIn(req)) {
-                    oauth.getUserGuilds(req.session.access_token).then(guilds => {
-                        if (!checkUserInGuild(guilds)) {
-                            res.send(constructMessagePage(lang.getText("permissionError"), 2));
+                    oauth.getUser(req.session.access_token).then(user => {
+                        const queue = useQueue(process.env.GUILD_ID);
+                        if (queue == null) {
+                            res.send({ status: "queueNoExist" });
                         } else {
-                            const queue = useQueue(process.env.GUILD_ID);
                             if (queue == null || queue.tracks.length === 0) {
                                 res.send({ "status": "noTrack" });
                             } else {
-                                let track = queue.currentTrack.toJSON();
-                                track.progress = queue.node.getTimestamp(false).current.value;
-                                res.send({ status: "success", track: track });
+                                if (queue.currentTrack != null) {
+                                    let track = queue.currentTrack.toJSON();
+                                    track.progress = queue.node.getTimestamp(false).current.value;
+                                    track.volume = queue.node.volume;
+                                    track.paused = queue.node.isPaused();
+                                    res.send({ status: "success", track: track });
+                                } else {
+                                    res.send({ "status": "noTrack" });
+                                }
                             }
 
-
-                            // res.send(constructMessagePage("Successful track skip", 0));
                         }
                     })
                 } else {
-                    res.send(constructMessagePage(lang.getText("authorisationError"), 2));
+                    res.send({ status: "notLoggedIn" });
                 }
             })
 
             app.post('/api/music/get-queue', (req, res) => {
                 if (checkLoggedIn(req)) {
-                    oauth.getUserGuilds(req.session.access_token).then(guilds => {
-                        if (!checkUserInGuild(guilds)) {
-                            res.send(constructMessagePage(lang.getText("permissionError"), 2));
+                    oauth.getUser(req.session.access_token).then(user => {
+                        const queue = useQueue(process.env.GUILD_ID);
+                        if (queue == null) {
+                            res.send({ status: "queueNoExist" });
                         } else {
                             const queue = useQueue(process.env.GUILD_ID);
-                            if (queue==null || queue.tracks.length===0) {
-                                res.send({"status": "queueEmpty"});
+                            if (queue == null || queue.tracks.length === 0) {
+                                res.send({ "status": "queueEmpty" });
                             } else {
                                 let tracks = queue.tracks.toArray();
-                                res.send({status: "success", tracks: tracks});
+                                res.send({ status: "success", tracks: tracks });
                             }
-                            
-                            
-                            // res.send(constructMessagePage("Successful track skip", 0));
+
                         }
                     })
                 } else {
-                    res.send(constructMessagePage(lang.getText("authorisationError"), 2));
+                    res.send({ status: "notLoggedIn" });
+                }
+            })
+
+            app.post('/api/music/pause', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    oauth.getUser(req.session.access_token).then(user => {
+                        const queue = useQueue(process.env.GUILD_ID);
+                        if (queue==null) {
+                            res.send({ status: "queueNoExist" });
+                        } else {
+                            if (checkUserInChannel(user.id, queue.channel)) {
+                                queue.node.setPaused(!queue.node.isPaused());
+                                res.send({ status: "success" });
+                            } else {
+                                res.send({ status: "userNotInBotChannel" });
+                            }
+                        }
+                    })
+                } else {
+                    res.send({ status: "notLoggedIn" });
                 }
             })
 
             app.post('/api/music/skip-song', (req, res) => {
                 if (checkLoggedIn(req)) {
-                    oauth.getUserGuilds(req.session.access_token).then(guilds => {
-                        if (!checkUserInGuild(guilds)) {
-                            res.send(constructMessagePage(lang.getText("permissionError"), 2));
+                    oauth.getUser(req.session.access_token).then(user => {
+                        const queue = useQueue(process.env.GUILD_ID);
+                        if (queue == null) {
+                            res.send({ status: "queueNoExist" });
                         } else {
-                            const queue = useQueue(process.env.GUILD_ID);
-                            queue.node.skip();
-                            res.send(constructMessagePage("Successful track skip", 0));
+                            if (checkUserInChannel(user.id, queue.channel)) {
+                                const queue = useQueue(process.env.GUILD_ID);
+                                queue.node.skip();
+                                res.send({ status: "success" });
+                            } else {
+                                res.send({ status: "userNotInBotChannel" });
+                            }
                         }
                     })
                 } else {
-                    res.send(constructMessagePage(lang.getText("authorisationError"), 2));
+                    res.send({ status: "notLoggedIn" });
+                }
+            })
+
+            app.post('/api/music/seek', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    oauth.getUser(req.session.access_token).then(user => {
+                        const queue = useQueue(process.env.GUILD_ID);
+                        if (queue == null) {
+                            res.send({ status: "queueNoExist" });
+                        } else {
+                            if (checkUserInChannel(user.id, queue.channel)) {
+                                const queue = useQueue(process.env.GUILD_ID);
+                                if (queue == null || queue.currentTrack == null) {
+                                    res.send({ status: "queueNoExist" });
+                                }
+                                if (req.body.target == null || !Number.isInteger(req.body.target) || req.body.target < 0 || req.body.target > queue.currentTrack.durationMS / 1000) {
+                                    res.send({ status: "valueError" });
+                                } else {
+                                    queue.node.seek(req.body.target * 1000);
+                                    res.send({ status: "success" });
+                                }
+                            } else {
+                                res.send({ status: "userNotInBotChannel" });
+                            }
+                        }
+                    })
+                } else {
+                    res.send({ status: "notLoggedIn" });
+                }
+            })
+
+            app.post('/api/music/set-volume', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    oauth.getUser(req.session.access_token).then(user => {
+                        const queue = useQueue(process.env.GUILD_ID);
+                        if (queue == null) {
+                            res.send({ status: "queueNoExist" });
+                        } else {
+                            if (checkUserInChannel(user.id, queue.channel)) {
+                                if (req.body.target == null || !Number.isInteger(req.body.target) || req.body.target < 0 || req.body.target > 100) {
+                                    res.send({ status: "valueError" });
+                                } else {
+                                    const queue = useQueue(process.env.GUILD_ID);
+                                    queue.node.setVolume(req.body.target);
+                                    res.send({ status: "success" });
+                                }
+                            } else {
+                                res.send({ status: "userNotInBotChannel" });
+                            }
+
+                        }
+                    })
+                } else {
+                    res.send({ status: "notLoggedIn" });
                 }
             })
 
@@ -174,6 +256,13 @@ function checkLoggedIn(req) {
     } else {
         return true
     }
+}
+
+function checkUserInChannel(user_id, channel) {
+    for (let key of channel.members.keys()) {
+        if (key==user_id) return true;
+    }
+    return false;
 }
 
 function constructMessagePage(message, type) {

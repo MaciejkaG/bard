@@ -118,7 +118,7 @@ class customSlider extends HTMLElement {
         this.max = parseFloat(this.getAttribute("max")) || 100;
         this.trackLength = 100;
         this.step = parseFloat(this.getAttribute("step")) || 1;
-        this.sliderWidth = this.getAttribute("slider-width") || "30rem";
+        this.sliderWidth = this.getAttribute("slider-width") || "23rem";
         this.sliderId = this.getAttribute("slider-id") || "slider";
         this.valueBubble = this.getAttribute("value-bubble") == "false" ? false : true;
 
@@ -159,6 +159,9 @@ class customSlider extends HTMLElement {
         slider.min = this.min;
         slider.max = this.max;
         slider.step = this.step;
+            slider.addEventListener('mouseup', function () {
+                
+            });
         if (value) {
             slider.value = this.value;
         }
@@ -323,15 +326,27 @@ class customSlider extends HTMLElement {
             if (this.sliderId === "volumeSlider") {
                 value.innerHTML = `${slider.value}%`;
                 if (slider.value === "0") {
-                    $(".playbar .right .volumeControls img").attr("src", "../assets/img/no-volume.svg")
+                    $(".playbar .right .volumeControls img").attr("src", "/img/no-volume.svg")
                 } else {
-                    $(".playbar .right .volumeControls img").attr("src", "../assets/img/volume.svg")
+                    $(".playbar .right .volumeControls img").attr("src", "/img/volume.svg")
                 }
             }
         }
 
 
         track.style.setProperty("--value", valuePercentage);
+    }
+
+    addChangeEvent(func) {
+        let slider = this.root.getElementById(this.sliderId);
+
+        slider.addEventListener('mouseup', func);
+    }
+
+    getSeconds() {
+        let slider = this.root.getElementById(this.sliderId);
+        let progressPercentage = slider.value / slider.max;
+        return Math.floor(progressPercentage * this.trackLength);
     }
 
 

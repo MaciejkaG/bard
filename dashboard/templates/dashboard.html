@@ -5,36 +5,60 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;1,400;1,600&family=Roboto+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Montserrat:ital,wght@0,400;0,600;1,400;1,600&family=Roboto+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bard Dashboard</title>
     <style>
         body {
             background: rgb(16, 16, 16);
+            background: -webkit-linear-gradient(to bottom, #190A05, #870000);  /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to top, #190A05, #870000); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+            background-repeat: no-repeat;
+            height: 100vh;
+            
             color: white;
             font-family: 'Roboto Mono', monospace;
+            overflow: hidden;
         }
         .queueFade {
+            /* box-sizing: border-box; */
+            /* padding-left: 15px; */
             position: fixed;
             top: 0;
             left: 0;
             width: 15rem;
-            height: 10rem;
+            height: 8rem;
             background: linear-gradient(to right, black, transparent);
             z-index: 101;
             pointer-events: none;
+            user-select: none;
+            font-family: 'Lato', sans-serif;
+            letter-spacing: 0.2em;
+            /* writing-mode: vertical-lr;
+            text-orientation: sideways-left; */
+            display: flex;
+            font-weight: 300;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .queueFade span {
+            opacity: 0.7;
+            transform: rotate(-90deg);
+            margin-right: auto;
+            margin-left: 40px;
         }
         .queueBlock {
             position: fixed;
             display: flex;
+            flex-wrap: nowrap;
             flex-direction: row-reverse;
             top: 0;
             left: 0;
             width: calc(100% - 30px);
-            height: calc(10rem - 30px);
+            height: calc(8rem - 30px);
             padding: 15px;
-            box-shadow: 0 0 30px 1px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 30px 10px rgba(0, 0, 0, 0.5);
             background: rgb(8, 8, 8);
             z-index: 100;
             gap: 20px;
@@ -45,11 +69,15 @@
             white-space: nowrap;
             display: flex;
             padding: 10px;
+            padding-left: 13px;
+            padding-right: 13px;
             box-sizing: border-box;
             height: 100%;
-            width: 20rem;
+            width: 18rem;
+            min-width: 16rem;
             background: rgb(20, 20, 20);
             border-radius: 15px;
+            opacity: 0;
         }
         .queueBlock .position h1 {
             font-size: 20px;
@@ -67,7 +95,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 20px;
+            gap: 7px;
         }
         .queueBlock .position .right {
             margin-left: auto;
@@ -94,8 +122,8 @@
             bottom: 15px;
             left: 0;
             z-index: 999;
-            opacity: 0;
-            transition: opacity 0.3s;
+            transform: translateY(200%);
+            transition: transform 0.7s;
         }
         .playbar {
             min-width: 1000px;
@@ -215,9 +243,110 @@
         .playbar .right .volumeControls custom-slider {
             margin-right: 30px;
         }
+
+        .center {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 102;
+        }
+
+        .center input {
+            height: 30px;
+            font-size: 21px;
+            padding: 10px;
+            width: 40rem;
+            background: black;
+            outline: none;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            border: solid 1px rgb(0, 0, 0);
+            transition: all 0.4s;
+            caret-shape: underscore;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .center input:focus {
+            transform: scale(1.06);
+            border: solid 1px rgb(99, 99, 99);
+        }
+
+        .center .cover {
+            font-size: 21px;
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            /* width: 0;
+            height: 0; */
+            background: rgb(0, 0, 0);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 103;
+            /* animation: startAnimation ease 2s 1; */
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        @keyframes startAnimation {
+            0% {
+                width: 100vw;
+                height: 100vh;
+            }
+            50% {
+                width: 100vw;
+                height: 52px;
+            }
+            99% {
+                width: 40rem;
+                height: 52px;
+            }
+            100% {
+                width: 0;
+                height: 0;
+            }
+        }
+
+        .center .cover img {
+            animation: spinLoading 2s infinite ease;
+            height: 20rem;
+            aspect-ratio: 1;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+
+        @keyframes spinLoading {
+            0% {
+                transform: rotateZ(0);
+            }
+            30% {
+                transform: rotateZ(0);
+            }
+            60% {
+                transform: rotateZ(-10deg);
+            }
+            100% {
+                transform: rotateZ(360deg);
+            }
+        }
+
+        .error {
+            background: #d93b3b;
+            color: white;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
+    <div class="center">
+        <input type="text">
+        <div class="cover"><img src="/img/bard-logo-nobg.png" alt="logo"></div>
+    </div>
     <div class="pbContainer">
         <div class="playbar">
             <div class="left">
@@ -226,13 +355,13 @@
             <div class="controls">
                 <div class="top">
                     <div class="btnscontainer">
-                        <div class="playBtnContainer skip">
+                        <div class="playBtnContainer skip" id="backSkip">
                             <img src="/img/prev.svg" alt="">
                         </div>
-                        <div class="playBtnContainer">
+                        <div class="playBtnContainer" id="pause">
                             <img src="/img/play-black.svg" alt="">
                         </div>
-                        <div class="playBtnContainer skip">
+                        <div class="playBtnContainer skip" id="forwardSkip">
                             <img src="/img/skip.svg" alt="">
                         </div>
                     </div>
@@ -257,36 +386,153 @@
             </div>
         </div>
     </div>
-    <div class="queueFade"></div>
+    <div class="queueFade"><span>QUEUE</span></div>
     <div class="queueBlock" id="queue">
         
     </div>
-    <script src="/js/slider.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/js/slider.js"></script>
 
     <script>
         window.onload = function() {
-            setInterval(updateCurrentTrack, 1000);
-            setInterval(updateQueue, 10000);
+            setTimeout(() => {
+                $('.center .cover').css('animation', 'startAnimation ease 2s 1');
+                $('.center .cover').css('width', '0');
+                $('.center .cover').css('height', '0');
+                $('.center .cover img').css('opacity', '0');
+            }, 400);
+
+            setTimeout(() => {
+                updateCurrentTrack();
+                updateQueue();
+                setInterval(updateCurrentTrack, 1000);
+                setInterval(updateQueue, 10000);
+                $("#pause").click(function () {
+                    $.post("/api/music/pause", function (data, status) {
+                        if (status === "success" && data.status === "success") {
+
+                        } else {
+                            Toastify({
+                                text: `{{connectionError}}<br>${data.status}`,
+                                duration: 3000,
+                                newWindow: true,
+                                close: true,
+                                gravity: "bottom",
+                                position: "right",
+                                stopOnFocus: true,
+                                className: "error"
+                            }).showToast();
+                        }
+                    });
+                })
+                $("#forwardSkip").click(function () {
+                    $.post("/api/music/skip-song", function (data, status) {
+                        if (status === "success" && data.status === "success") {
+
+                        } else {
+                            Toastify({
+                                text: `{{connectionError}}\n${data.status}`,
+                                duration: 3000,
+                                newWindow: true,
+                                close: true,
+                                gravity: "bottom",
+                                position: "right",
+                                stopOnFocus: true,
+                                className: "error"
+                            }).showToast();
+                        }
+                    });
+                })
+                const progressSlider = document.querySelector('[slider-id="progressSlider"]');
+                progressSlider.addChangeEvent(function () {
+                    console.log(progressSlider.getSeconds());
+                    $.ajax({
+                        url: "/api/music/seek", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: progressSlider.getSeconds() }), success: function (result, status) {
+                            if (status !== "success" || result.status !== "success") {
+                                Toastify({
+                                    text: `{{connectionError}}\n${result.status}`,
+                                    duration: 3000,
+                                    newWindow: true,
+                                    close: true,
+                                    gravity: "bottom",
+                                    position: "right",
+                                    stopOnFocus: true,
+                                    className: "error"
+                                }).showToast();
+                            }
+                        }, error: function () {
+                            Toastify({
+                                text: "{{connectionError}}",
+                                duration: 3000,
+                                newWindow: true,
+                                close: true,
+                                gravity: "bottom",
+                                position: "right",
+                                stopOnFocus: true,
+                                className: "error"
+                            }).showToast();
+                        }
+                    });
+                })
+                const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
+                volumeSlider.addChangeEvent(function () {
+                    $.ajax({
+                        url: "/api/music/set-volume", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: parseInt(this.value) }), success: function (result, status) {
+                            if (status !== "success" || result.status !== "success") {
+                                Toastify({
+                                    text: `{{connectionError}}\n${result.status}`,
+                                    duration: 3000,
+                                    newWindow: true,
+                                    close: true,
+                                    gravity: "bottom",
+                                    position: "right",
+                                    stopOnFocus: true,
+                                    className: "error"
+                                }).showToast();
+                            }
+                        }, error: function () {
+                            Toastify({
+                                text: "{{connectionError}}",
+                                duration: 3000,
+                                newWindow: true,
+                                close: true,
+                                gravity: "bottom",
+                                position: "right",
+                                stopOnFocus: true,
+                                className: "error"
+                            }).showToast();
+                        }
+                    });
+                });
+            }, 1000);
         }
 
         function updateCurrentTrack() {
             $.post("/api/music/get-current-track", function (data, status) {
                 if (status === "success" && data.status === "success") {
                     let track = data.track;
+                    if (track.paused) {
+                        $('#pause img').attr("src", "/img/play-black.svg")
+                    } else {
+                        $('#pause img').attr("src", "/img/pause.svg")
+                    }
                     $('#currentTrackTitle').html(track.title);
                     $('#currentTrackAuthor').html(track.author);
                     const progressSlider = document.querySelector('[slider-id="progressSlider"]');
                     progressSlider.trackLength = Math.floor(track.durationMS / 1000);
                     progressSlider.setValue(track.progress / 1000);
-                    $('.pbContainer').css('opacity', '1');
+                    const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
+                    volumeSlider.setValue(data.track.volume);
+                    $('.pbContainer').css('transform', 'translateY(0)');
                     $('.pbContainer').css('pointer-events', 'all');
                 } else {
-                    $('.pbContainer').css('opacity', '0');
+                    $('.pbContainer').css('transform', 'translateY(200%)');
                     $('.pbContainer').css('pointer-events', 'none');
                 }
             });
         }
+
+        var firstTimeLoading = true;
 
         function updateQueue() {
             $.post("/api/music/get-queue", function (data, status) {
@@ -297,6 +543,14 @@
                         queueHTML += `<div class="position"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
                     }
                     $("#queue").html(queueHTML);
+                    if (firstTimeLoading) {
+                        $(".queueBlock .position").animate({ opacity: '1' }, 500);
+                        firstTimeLoading = false;
+                    }
+                    $(".queueBlock .position").css('opacity', '1');
+                    
+
+                    // $('.queueBlock .position').css("opacity", "1");
                 }
             });
         }

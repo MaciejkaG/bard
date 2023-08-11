@@ -18,6 +18,8 @@
     "warning": "Ostrzeżenie",
     "error": "Błąd",
     "backHome": "Powróć do Strony głównej",
+    "connectionError": "Błąd połączenia",
     "authorisationError": "Wystąpił błąd autoryzacji, spróbuj ponownie później.",
-    "permissionError": "Nie jesteś uprawniony(-a) do korzystania z tego dashboardu."
+    "permissionError": "Nie jesteś uprawniony(-a) do korzystania z tego dashboardu.",
+    "valueError": "Wystąpił błąd wartości."
 }
