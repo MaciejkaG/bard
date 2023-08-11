@@ -87,12 +87,59 @@ module.exports = {
                             res.send(constructMessagePage(lang.getText("permissionError"), 2));
                         } else {
                             var template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/dashboard.html'), 'utf8'));
-                            res.send(template());
+                            res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed") }));
                         }
                     })
 
                 } else {
                     res.redirect(`https://discord.com/api/oauth2/authorize?client_id=1138900172651380818&redirect_uri=${encodeURI(process.env.REDIRECT)}%2Fapi%2Fauth%2Fredirect&response_type=code&scope=identify%20guilds`)
+                }
+            })
+
+            app.post('/api/music/get-current-track', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    oauth.getUserGuilds(req.session.access_token).then(guilds => {
+                        if (!checkUserInGuild(guilds)) {
+                            res.send(constructMessagePage(lang.getText("permissionError"), 2));
+                        } else {
+                            const queue = useQueue(process.env.GUILD_ID);
+                            if (queue == null || queue.tracks.length === 0) {
+                                res.send({ "status": "noTrack" });
+                            } else {
+                                let track = queue.currentTrack.toJSON();
+                                track.progress = queue.node.getTimestamp(false).current.value;
+                                res.send({ status: "success", track: track });
+                            }
+
+
+                            // res.send(constructMessagePage("Successful track skip", 0));
+                        }
+                    })
+                } else {
+                    res.send(constructMessagePage(lang.getText("authorisationError"), 2));
+                }
+            })
+
+            app.post('/api/music/get-queue', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    oauth.getUserGuilds(req.session.access_token).then(guilds => {
+                        if (!checkUserInGuild(guilds)) {
+                            res.send(constructMessagePage(lang.getText("permissionError"), 2));
+                        } else {
+                            const queue = useQueue(process.env.GUILD_ID);
+                            if (queue==null || queue.tracks.length===0) {
+                                res.send({"status": "queueEmpty"});
+                            } else {
+                                let tracks = queue.tracks.toArray();
+                                res.send({status: "success", tracks: tracks});
+                            }
+                            
+                            
+                            // res.send(constructMessagePage("Successful track skip", 0));
+                        }
+                    })
+                } else {
+                    res.send(constructMessagePage(lang.getText("authorisationError"), 2));
                 }
             })
 

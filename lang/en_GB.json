@@ -10,10 +10,14 @@
     
     "rootSubtitle": "Bard is an advanced open-source Discord music bot.",
     "login": "Proceed to dashboard login",
+
+    "queueFetchFailed": "Queue fetch failed",
+    "trackFetchFailed": "Current track fetch failed",
+
     "message": "Message",
     "warning": "Warning",
     "error": "Error",
     "backHome": "Go back to Home",
     "authorisationError": "An authorisation error occured, try again later.",
-    "permission": "You aren't permitted to use this dashboard."
+    "permissionError": "You aren't permitted to use this dashboard."
 }

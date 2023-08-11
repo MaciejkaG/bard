@@ -6,6 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;1,400;1,600&family=Roboto+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bard Dashboard</title>
     <style>
@@ -14,14 +15,74 @@
             color: white;
             font-family: 'Roboto Mono', monospace;
         }
-        .queueBlock {
+        .queueFade {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 15rem;
             height: 10rem;
+            background: linear-gradient(to right, black, transparent);
+            z-index: 101;
+            pointer-events: none;
+        }
+        .queueBlock {
+            position: fixed;
+            display: flex;
+            flex-direction: row-reverse;
+            top: 0;
+            left: 0;
+            width: calc(100% - 30px);
+            height: calc(10rem - 30px);
+            padding: 15px;
             box-shadow: 0 0 30px 1px rgba(0, 0, 0, 0.4);
             background: rgb(8, 8, 8);
+            z-index: 100;
+            gap: 20px;
+        }
+        .queueBlock .position {
+            font-family: 'Montserrat', sans-serif;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: flex;
+            padding: 10px;
+            box-sizing: border-box;
+            height: 100%;
+            width: 20rem;
+            background: rgb(20, 20, 20);
+            border-radius: 15px;
+        }
+        .queueBlock .position h1 {
+            font-size: 20px;
+            max-width: 8em;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        .queueBlock .position h2 {
+            font-size: 16px;
+            max-width: 10em;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        .queueBlock .position .left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+        }
+        .queueBlock .position .right {
+            margin-left: auto;
+        }
+        .queueBlock .position img {
+            height: 100%;
+            border-radius: 15px;
+            object-fit: cover;
+            aspect-ratio: 1;
+        }
+        .queueBlock .position h2 {
+            font-weight: 400;
+        }
+        .queueBlock .position * {
+            margin: 0;
         }
         .pbContainer {
             position: fixed;
@@ -76,6 +137,12 @@
         .playbar .left {
             margin-left: 15px;
             font-family: 'Montserrat', sans-serif;
+        }
+        .playbar .left p {
+            max-width: 15em;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
         .playbar .left .title {
             font-weight: 600;
@@ -152,7 +219,7 @@
     <div class="pbContainer">
         <div class="playbar">
             <div class="left">
-                <p><span class="title">uahaha</span><br><span class="author">Unknown author</span></p>
+                <p><span class="title" id="currentTrackTitle">uahaha</span><br><span class="author" id="currentTrackAuthor">Unknown author</span></p>
             </div>
             <div class="controls">
                 <!-- <input type="range" min="1" max="100" value="50" class="slider" id="myRange"> -->
@@ -190,10 +257,75 @@
             </div>
         </div>
     </div>
-    <div class="queueBlock">
-
+    <div class="queueFade"></div>
+    <div class="queueBlock" id="queue">
+        
     </div>
-
     <script src="/js/slider.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <script>
+        window.onload = function() {
+            setInterval(updateCurrentTrack, 1000);
+            setInterval(updateQueue, 10000);
+        }
+
+        function updateCurrentTrack() {
+            $.post("/api/music/get-current-track", function (data, status) {
+                if (status === "success" && data.status === "success") {
+                    let track = data.track;
+                    console.log(track);
+                    $('#currentTrackTitle').html(track.title);
+                    $('#currentTrackAuthor').html(track.author);
+                    const progressSlider = document.querySelector('[slider-id="progressSlider"]');
+                    progressSlider.trackLength = Math.floor(track.durationMS / 1000);
+                    progressSlider.setValue(track.progress / 1000);
+                } else {
+                    Toastify({
+                        text: "{{trackFetchFailed}}",
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            background: "#d93b3b",
+                            color: "white",
+                            "font-size": "13px",
+                        }
+                    }).showToast();
+                }
+            });
+        }
+
+        function updateQueue() {
+            $.post("/api/music/get-queue", function (data, status) {
+                if (status==="success" && data.status==="success") {
+                    let queueHTML = "";
+                    for (let i = 0; i < data.tracks.length; i++) {
+                        const track = data.tracks[i];
+                        queueHTML += `<div class="position"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
+                    }
+                    $("#queue").html(queueHTML);
+                } else {
+                    Toastify({
+                        text: "{{queueFetchFailed}}",
+                        duration: 5000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom", // `top` or `bottom`
+                        position: "right", // `left`, `center` or `right`
+                        stopOnFocus: true,
+                        style: {
+                            background: "#d93b3b",
+                            color: "white",
+                            "font-size": "13px",
+                        }
+                    }).showToast();
+                }
+            });
+        }
+    </script>
 </body>
 </html>

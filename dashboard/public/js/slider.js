@@ -1,5 +1,3 @@
-const trackLength = 7000;
-
 let stylesheetText = `
 #slider-container {
     --value : 0 ;
@@ -118,6 +116,7 @@ class customSlider extends HTMLElement {
         this.value = parseFloat(this.getAttribute("value")) || 0;
         this.min = parseFloat(this.getAttribute("min")) || 0;
         this.max = parseFloat(this.getAttribute("max")) || 100;
+        this.trackLength = 60;
         this.step = parseFloat(this.getAttribute("step")) || 1;
         this.sliderWidth = this.getAttribute("slider-width") || "30rem";
         this.sliderId = this.getAttribute("slider-id") || "slider";
@@ -189,16 +188,18 @@ class customSlider extends HTMLElement {
         let track = this.root.getElementById("slider-container");
         let slider = this.root.getElementById(this.sliderId);
         let value = this.root.getElementById("value");
+        let secondsS;
         let valuePercentage = slider.value / (this.max - this.min);
         if (this.sliderId==="progressSlider") {
             let counter1 = document.getElementById("counter1");
             let counter2 = document.getElementById("counter2");
-            let seconds = Math.floor(slider.value / slider.max * trackLength);
+            let seconds = Math.floor(slider.value / slider.max * this.trackLength);
+            secondsS = seconds;
             let minutes = Math.floor(seconds / 60);
             let hours;
-            if (trackLength > 3600) {
+            if (this.trackLength > 3600) {
                 hours = Math.floor(minutes / 60);
-                let tSeconds = trackLength;
+                let tSeconds = this.trackLength;
                 let tMinutes = Math.floor(tSeconds / 60);
                 tSeconds = tSeconds - tMinutes * 60;
                 let tHours = Math.floor(tMinutes / 60);
@@ -213,7 +214,7 @@ class customSlider extends HTMLElement {
                 }
                 counter2.innerText = `${tHours}:${tMinutes}:${tSeconds}`;
             } else {
-                let tSeconds = trackLength;
+                let tSeconds = this.trackLength;
                 let tMinutes = Math.floor(tSeconds / 60);
                 tSeconds = tSeconds - tMinutes * 60;
                 tSeconds = tSeconds.toString();
@@ -255,25 +256,25 @@ class customSlider extends HTMLElement {
             }
         }
         
-
+        console.log(secondsS);
         track.style.setProperty("--value", valuePercentage);
     }
 
     setValue(tvalue) {
         let track = this.root.getElementById("slider-container");
         let slider = this.root.getElementById(this.sliderId);
-        slider.value = tvalue;
+        slider.value = this.max / this.trackLength * tvalue;
         let value = this.root.getElementById("value");
         let valuePercentage = slider.value / (this.max - this.min);
         if (this.sliderId === "progressSlider") {
             let counter1 = document.getElementById("counter1");
             let counter2 = document.getElementById("counter2");
-            let seconds = Math.floor(slider.value / slider.max * trackLength);
+            let seconds = Math.floor(slider.value / slider.max * this.trackLength);
             let minutes = Math.floor(seconds / 60);
             let hours;
-            if (trackLength > 3600) {
+            if (this.trackLength > 3600) {
                 hours = Math.floor(minutes / 60);
-                let tSeconds = trackLength;
+                let tSeconds = this.trackLength;
                 let tMinutes = Math.floor(tSeconds / 60);
                 tSeconds = tSeconds - tMinutes * 60;
                 let tHours = Math.floor(tMinutes / 60);
@@ -288,7 +289,7 @@ class customSlider extends HTMLElement {
                 }
                 counter2.innerText = `${tHours}:${tMinutes}:${tSeconds}`;
             } else {
-                let tSeconds = trackLength;
+                let tSeconds = this.trackLength;
                 let tMinutes = Math.floor(tSeconds / 60);
                 tSeconds = tSeconds - tMinutes * 60;
                 tSeconds = tSeconds.toString();
