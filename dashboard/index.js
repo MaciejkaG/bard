@@ -41,7 +41,6 @@ module.exports = {
                 res.send(template({ subtitle: lang.getText("rootSubtitle"), login: lang.getText("login") }))
             })
 
-
             app.get('/login', (req, res) => {
                 if (checkLoggedIn(req)) {
                     res.redirect("/dashboard")
@@ -103,20 +102,27 @@ module.exports = {
                         if (queue == null) {
                             res.send({ status: "queueNoExist" });
                         } else {
-                            if (queue == null || queue.tracks.length === 0) {
-                                res.send({ "status": "noTrack" });
-                            } else {
-                                if (queue.currentTrack != null) {
-                                    let track = queue.currentTrack.toJSON();
-                                    track.progress = queue.node.getTimestamp(false).current.value;
-                                    track.volume = queue.node.volume;
-                                    track.paused = queue.node.isPaused();
-                                    res.send({ status: "success", track: track });
+                            if (checkUserInChannel(user.id, queue.channel)) {
+                                if (queue == null || queue.tracks.length === 0) {
+                                    res.send({ "status": "queueEmpty" });
                                 } else {
-                                    res.send({ "status": "noTrack" });
+                                    if (queue == null || queue.tracks.length === 0) {
+                                        res.send({ "status": "noTrack" });
+                                    } else {
+                                        if (queue.currentTrack != null) {
+                                            let track = queue.currentTrack.toJSON();
+                                            track.progress = queue.node.getTimestamp(false).current.value;
+                                            track.volume = queue.node.volume;
+                                            track.paused = queue.node.isPaused();
+                                            res.send({ status: "success", track: track });
+                                        } else {
+                                            res.send({ "status": "noTrack" });
+                                        }
+                                    }
                                 }
+                            } else {
+                                res.send({ status: "userNotInBotChannel" });
                             }
-
                         }
                     })
                 } else {
@@ -131,14 +137,16 @@ module.exports = {
                         if (queue == null) {
                             res.send({ status: "queueNoExist" });
                         } else {
-                            const queue = useQueue(process.env.GUILD_ID);
-                            if (queue == null || queue.tracks.length === 0) {
-                                res.send({ "status": "queueEmpty" });
+                            if (checkUserInChannel(user.id, queue.channel)) {
+                                if (queue == null || queue.tracks.length === 0) {
+                                    res.send({ "status": "queueEmpty" });
+                                } else {
+                                    let tracks = queue.tracks.toArray();
+                                    res.send({ status: "success", tracks: tracks });
+                                }
                             } else {
-                                let tracks = queue.tracks.toArray();
-                                res.send({ status: "success", tracks: tracks });
+                                res.send({ status: "userNotInBotChannel" });
                             }
-
                         }
                     })
                 } else {
@@ -242,7 +250,7 @@ module.exports = {
             })
 
             app.listen(process.env.PORT, () => {
-                console.log(`Server listening on ${process.env.PORT}`);
+                console.log(`[DASHBOARD] Dashboard server listening on ${process.env.PORT} (${process.env.REDIRECT}/)`);
             });
         } catch (e) {
             console.log(e);
@@ -286,7 +294,7 @@ function checkUserInGuild(guilds) {
     let isInGuild = false;
     for (let i = 0; i < guilds.length; i++) {
         const elem = guilds[i];
-        if (elem.id===process.env.GUILD_ID) {
+        if (elem.id === process.env.GUILD_ID) {
             isInGuild = true;
         }
     }

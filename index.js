@@ -47,7 +47,7 @@ client.on(Events.InteractionCreate, async interaction => {
     const command = interaction.client.commands.get(interaction.commandName);
 
     if (!command) {
-        console.error(`No command matching ${interaction.commandName} was found.`);
+        console.log(`No command matching ${interaction.commandName} was found.`);
         return;
     }
 
@@ -64,7 +64,7 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.once(Events.ClientReady, c => {
-    console.log(`Ready! Logged in as ${c.user.tag}`);
+    console.log(`[BOT] Logged in as ${c.user.tag}`);
 });
 
 client.login(token);
