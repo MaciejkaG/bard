@@ -94,6 +94,8 @@
             bottom: 15px;
             left: 0;
             z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         .playbar {
             min-width: 1000px;
@@ -139,7 +141,7 @@
             font-family: 'Montserrat', sans-serif;
         }
         .playbar .left p {
-            max-width: 15em;
+            max-width: 12em;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
@@ -222,8 +224,6 @@
                 <p><span class="title" id="currentTrackTitle">uahaha</span><br><span class="author" id="currentTrackAuthor">Unknown author</span></p>
             </div>
             <div class="controls">
-                <!-- <input type="range" min="1" max="100" value="50" class="slider" id="myRange"> -->
-                <!-- <input type="range" min="10" max="1000" step="10" value="300" data-orientation="horizontal"> -->
                 <div class="top">
                     <div class="btnscontainer">
                         <div class="playBtnContainer skip">
@@ -240,7 +240,7 @@
                 </div>
                 <div class="bottom">
                     <span id="counter1">0:00</span>
-                    <custom-slider min="0" max="1000" value="50" value-bubble="false"
+                    <custom-slider min="0" max="1000" value-bubble="false"
                         slider-id="progressSlider"></custom-slider>
                     <span id="counter2">0:00</span>
                 </div>
@@ -274,27 +274,16 @@
             $.post("/api/music/get-current-track", function (data, status) {
                 if (status === "success" && data.status === "success") {
                     let track = data.track;
-                    console.log(track);
                     $('#currentTrackTitle').html(track.title);
                     $('#currentTrackAuthor').html(track.author);
                     const progressSlider = document.querySelector('[slider-id="progressSlider"]');
                     progressSlider.trackLength = Math.floor(track.durationMS / 1000);
                     progressSlider.setValue(track.progress / 1000);
+                    $('.pbContainer').css('opacity', '1');
+                    $('.pbContainer').css('pointer-events', 'all');
                 } else {
-                    Toastify({
-                        text: "{{trackFetchFailed}}",
-                        duration: 3000,
-                        newWindow: true,
-                        close: true,
-                        gravity: "bottom",
-                        position: "right",
-                        stopOnFocus: true,
-                        style: {
-                            background: "#d93b3b",
-                            color: "white",
-                            "font-size": "13px",
-                        }
-                    }).showToast();
+                    $('.pbContainer').css('opacity', '0');
+                    $('.pbContainer').css('pointer-events', 'none');
                 }
             });
         }
@@ -308,21 +297,6 @@
                         queueHTML += `<div class="position"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
                     }
                     $("#queue").html(queueHTML);
-                } else {
-                    Toastify({
-                        text: "{{queueFetchFailed}}",
-                        duration: 5000,
-                        newWindow: true,
-                        close: true,
-                        gravity: "bottom", // `top` or `bottom`
-                        position: "right", // `left`, `center` or `right`
-                        stopOnFocus: true,
-                        style: {
-                            background: "#d93b3b",
-                            color: "white",
-                            "font-size": "13px",
-                        }
-                    }).showToast();
                 }
             });
         }

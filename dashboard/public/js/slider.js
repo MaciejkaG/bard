@@ -116,7 +116,7 @@ class customSlider extends HTMLElement {
         this.value = parseFloat(this.getAttribute("value")) || 0;
         this.min = parseFloat(this.getAttribute("min")) || 0;
         this.max = parseFloat(this.getAttribute("max")) || 100;
-        this.trackLength = 60;
+        this.trackLength = 100;
         this.step = parseFloat(this.getAttribute("step")) || 1;
         this.sliderWidth = this.getAttribute("slider-width") || "30rem";
         this.sliderId = this.getAttribute("slider-id") || "slider";
@@ -255,8 +255,7 @@ class customSlider extends HTMLElement {
                 }
             }
         }
-        
-        console.log(secondsS);
+
         track.style.setProperty("--value", valuePercentage);
     }
 
