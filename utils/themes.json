@@ -1,0 +1,28 @@
+{
+    "themes": [
+        {
+            "name": "Red light",
+            "mainColor1": "#870000",
+            "mainColor2": "#190a05",
+            "altColor": "#ed2929"
+        },
+        {
+            "name": "Bubblegum",
+            "mainColor1": "#ef32d9",
+            "mainColor2": "#89fffd",
+            "altColor": "#ff21e5"
+        },
+        {
+            "name": "Wild berry",
+            "mainColor1": "#dc2430",
+            "mainColor2": "#7b4397",
+            "altColor": "#e32d58"
+        },
+        {
+            "name": "Amethyst ocean",
+            "mainColor1": "#0b8793",
+            "mainColor2": "#360033",
+            "altColor": "#096485"
+        }
+    ]
+}

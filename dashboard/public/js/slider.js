@@ -3,8 +3,6 @@ let stylesheetText = `
     --value : 0 ;
     --slider-track-color : #B0EFEF45 ;
     --slider-thumb-color : #fff ;
-    --slider-fill-color  : #ed2929 ;
-    --slider-fill2-color : #00A2BB ;
 
     width: __SLIDER_WIDTH__;
     height: 1rem ;
@@ -159,9 +157,6 @@ class customSlider extends HTMLElement {
         slider.min = this.min;
         slider.max = this.max;
         slider.step = this.step;
-            slider.addEventListener('mouseup', function () {
-                
-            });
         if (value) {
             slider.value = this.value;
         }
@@ -335,6 +330,10 @@ class customSlider extends HTMLElement {
 
 
         track.style.setProperty("--value", valuePercentage);
+    }
+
+    setSliderColor(color) {
+        this.root.setProperty('--slider-fill-color', color);
     }
 
     addChangeEvent(func) {

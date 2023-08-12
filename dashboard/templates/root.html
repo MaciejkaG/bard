@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="/img/bard-logo-bg.png">
+    <link rel="icon" type="image/x-icon" href="/img/logo.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;1,400;1,600&family=Roboto+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Montserrat:ital,wght@0,400;0,600;1,400;1,600&family=Raleway:ital,wght@1,500&family=Roboto+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
     <title>Bard</title>
     <style>
         body {
@@ -14,12 +15,24 @@
             color: white;
             font-family: 'Roboto Mono', monospace;
             font-size: 21px;
+            overflow: hidden;
+        }
+        div.bg {
+            background: rgba(25,10,5,1);
+            background: radial-gradient(ellipse at top, #870000, rgba(25,10,5,1));
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
         }
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Montserrat', sans-serif;
             font-weight: 600;
         }
         .title {
+            font-family: 'Raleway', sans-serif;
             font-size: 70px;
             margin: 0;
             margin-bottom: 10px;
@@ -28,6 +41,7 @@
             font-weight: 600;
         }
         .center {
+            z-index: 99;
             position: fixed;
             top: 0;
             left: 0;
@@ -44,31 +58,107 @@
             text-align: center;
 
         }
-        .footer {
-            position: fixed;
+        button {
+            font-family: 'Roboto Mono', monospace;
+            background: transparent;
+            backdrop-filter: blur(20px) brightness(130%) contrast(150%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: fit-content;
+            padding: 13px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border-radius: 30px;
+            position: relative;
             left: 50%;
-            bottom: 15px;
             transform: translateX(-50%);
-            white-space: nowrap;
-            opacity: 0.7;
+            font-size: 18px;
+        }
+
+        button:hover {
+            background: white;
+            color: black;
+        }
+
+        .cover {
+            font-size: 21px;
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            /* width: 0;
+            height: 0; */
+            background: rgb(0, 0, 0);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            /* animation: startAnimation ease 2s 1; */
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             user-select: none;
-            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.5s;
         }
-        a {
-            font-weight: 400;
-            color: rgb(85, 85, 255);
-            text-decoration: none;
+
+        .cover img {
+            height: 20rem;
+            aspect-ratio: 1;
+            transition: opacity 0.4s;
+            pointer-events: none;
         }
+
+        @keyframes loading {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .designerTag {
+            position: fixed;
+            bottom: 5px;
+            left: 5px;
+            color: rgb(0, 255, 0);
+            font-size: 9px;
+            pointer-events: none;
+            user-select: none;
+            z-index: 999;
+        }
+
     </style>
 </head>
 <body>
+    <div class="bg"></div>
+    <div class="cover"><img src="/img/logo-nobg.png" alt="logo"></div>
     <div class="center">
         <div class="container">
             <h1 class="title">Bard</h1>
             <span class="subtitle">{{subtitle}}</span>
-            <span><a href="/login">{{login}}</a></span>
+            <button id="dashboardProceed">{{login}}</button>
         </div>
     </div>
-    <span class="footer">Made with ❤️ by Codebois</span>
+    <script>
+        $(document).ready(function() {
+            $('#dashboardProceed').click(function () {
+                $('.cover').css('opacity', '1');
+                $('.cover img').css('animation', 'loading 1s infinite ease')
+                $('.cover').css('pointer-events', 'all');
+                setTimeout(() => {
+                    window.location.href = "/dashboard";
+                }, 1500);
+            })
+        })
+    </script>
+    <span class="designerTag">Designed by Maciejka</span>
 </body>
 </html>

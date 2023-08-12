@@ -9,8 +9,12 @@ const path = require('node:path');
 const lib = require("../utils");
 const querystring = require("querystring");
 const fs = require('fs');
-const { useQueue } = require("discord-player");
+const { useQueue, useMainPlayer } = require("discord-player");
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database(path.join(__dirname, "../db/main.db"));
 const lang = new lib.localisation.language(process.env.LANGUAGE);
+
+db.run("CREATE TABLE IF NOT EXISTS user_config (user_id VARCHAR(255) NOT NULL, theme_id INT NULL)");
 
 module.exports = {
     main: async function(client) {
@@ -37,8 +41,13 @@ module.exports = {
 
         try {
             app.get('/', (req, res) => {
-                var template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/root.html'), 'utf8'));
-                res.send(template({ subtitle: lang.getText("rootSubtitle"), login: lang.getText("login") }))
+                let template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/root.html'), 'utf8'));
+                if (checkLoggedIn(req)) {
+                    res.send(template({ subtitle: lang.getText("rootSubtitle"), login: lang.getText("noLogin") }))
+                } else {
+                    res.send(template({ subtitle: lang.getText("rootSubtitle"), login: lang.getText("login") }))
+                }
+                
             })
 
             app.get('/login', (req, res) => {
@@ -83,15 +92,54 @@ module.exports = {
                 if (checkLoggedIn(req)) {
                     oauth.getUserGuilds(req.session.access_token).then(guilds => {
                         if (!checkUserInGuild(guilds)) {
+                            req.session.isInGuild = false;
                             res.send(constructMessagePage(lang.getText("permissionError"), 2));
                         } else {
-                            var template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/dashboard.html'), 'utf8'));
-                            res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed"), connectionError: lang.getText("connectionError") }));
+                            req.session.isInGuild = true;
+                            oauth.getUser(req.session.access_token).then(user => {
+                                let themeListHTML = "";
+                                getUserTheme(user.id, (theme) => {
+                                    let allThemes = lib.themes.themeList();
+                                    for (let i = 0; i < allThemes.length; i++) {
+                                        const elem = allThemes[i];
+                                        if (theme.name != elem.name && theme.mainColor1 != elem.mainColor1) {
+                                            themeListHTML += `<span class="theme" onclick="changeTheme(${i})">${elem.name}</span>`
+                                        } else {
+                                            themeListHTML += `<span class="theme active">${elem.name}</span>`
+                                        }
+                                    }
+
+                                    let template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/dashboard.html'), 'utf8'));
+                                    res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed"), connectionError: lang.getText("connectionError"), redirect: process.env.REDIRECT, queue: lang.getText("queue"), themes: lang.getText("themes"), themeList: themeListHTML, mainColor1: theme.mainColor1, mainColor2: theme.mainColor2, altColor: theme.altColor }));
+                                });
+                                
+                            })
                         }
                     })
 
                 } else {
                     res.redirect(`https://discord.com/api/oauth2/authorize?client_id=1138900172651380818&redirect_uri=${encodeURI(process.env.REDIRECT)}%2Fapi%2Fauth%2Fredirect&response_type=code&scope=identify%20guilds`)
+                }
+            })
+            
+            app.post('/api/misc/change-theme', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    if (req.session.isInGuild) {
+                        oauth.getUser(req.session.access_token).then(user => {
+                            const themes = lib.themes.themeList();
+                            if (req.body.target == null || !Number.isInteger(req.body.target) || req.body.target < 0 || req.body.target > themes.length) {
+                                res.send({ status: "valueError" });
+                            } else {
+                                db.run(`UPDATE user_config SET theme_id = ${req.body.target} WHERE user_id = ${user.id}`);
+
+                                res.send({ status: "success" });
+                            }
+                        })
+                    } else {
+                        res.send({ status: "permissionError" });
+                    }
+                } else {
+                    res.send({ status: "notLoggedIn" });
                 }
             })
 
@@ -110,10 +158,16 @@ module.exports = {
                                         res.send({ "status": "noTrack" });
                                     } else {
                                         if (queue.currentTrack != null) {
-                                            let track = queue.currentTrack.toJSON();
-                                            track.progress = queue.node.getTimestamp(false).current.value;
-                                            track.volume = queue.node.volume;
-                                            track.paused = queue.node.isPaused();
+                                            let track;
+                                            try {
+                                                track = queue.currentTrack.toJSON();
+                                                track.progress = queue.node.getTimestamp(false).current.value;
+                                                track.volume = queue.node.volume;
+                                                track.paused = queue.node.isPaused();
+                                            } catch {
+                                                res.send({ "status": "trackGetError" });
+                                                return
+                                            }
                                             res.send({ status: "success", track: track });
                                         } else {
                                             res.send({ "status": "noTrack" });
@@ -249,6 +303,39 @@ module.exports = {
                 }
             })
 
+            app.post('/api/music/autocomplete', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    if (req.session.isInGuild) {
+                        oauth.getUser(req.session.access_token).then(user => {
+                            if (req.body.query == null || req.body.query.length < 0 || typeof req.body.query !== "string" || req.body.query.length > 50) {
+                                res.send({ status: "valueError" });
+                            } else {
+                                const player = useMainPlayer();
+                                player.search(req.body.query, { fallbackSearchEngine: "youtubeSearch" }).then((result) => {
+                                    if (!result.hasTracks()) {
+                                        res.send({ status: "noResults" });
+                                    } else {
+                                        res.send({
+                                            status: "success",
+                                            results: result.tracks.slice(0, 5).map((t) => ({
+                                                title: t.title,
+                                                author: t.author,
+                                                source: t.source,
+                                                url: t.url,
+                                            }))
+                                        });
+                                    }
+                                });
+                            }
+                        })
+                    } else {
+                        res.send({ status: "permissionError" })
+                    }
+                } else {
+                    res.send({ status: "notLoggedIn" });
+                }
+            })
+
             app.listen(process.env.PORT, () => {
                 console.log(`[DASHBOARD] Dashboard server listening on ${process.env.PORT} (${process.env.REDIRECT}/)`);
             });
@@ -256,6 +343,24 @@ module.exports = {
             console.log(e);
         }
     }
+}
+
+function getUserTheme(user_id, callback) {
+    db.get(`SELECT theme_id FROM user_config WHERE user_id = "${user_id}"`, function (err, row) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (row==null) {
+                db.run(`INSERT INTO user_config(user_id, theme_id) VALUES ("${user_id}", 0)`);
+                callback(lib.themes.getThemeById(0));
+            } else if (row.theme_id == null) {
+                db.run(`UPDATE user_config SET theme_id = 0 WHERE user_id = "${user_id}"`);
+                callback(lib.themes.getThemeById(0));
+            } else {
+                callback(lib.themes.getThemeById(row.theme_id));
+            }
+        }
+    })
 }
 
 function checkLoggedIn(req) {
@@ -286,7 +391,7 @@ function constructMessagePage(message, type) {
         color = "#ffff00";
         title = lang.getText("warning");
     }
-    var template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/message.html'), 'utf8'));
+    let template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/message.html'), 'utf8'));
     return template({ message: message, color: color, title: title, back: lang.getText("backHome") })
 }
 
