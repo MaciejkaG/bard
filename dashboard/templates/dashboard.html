@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Montserrat:ital,wght@0,400;0,600;1,400;1,600&family=Raleway:ital,wght@1,500&family=Roboto+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/shift-toward-subtle.css" />
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/translucent.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bard Dashboard</title>
     <style>
@@ -124,6 +126,7 @@
             bottom: 15px;
             left: 0;
             z-index: 100;
+            user-select: none;
             transform: translateY(200%);
             transition: transform 0.7s;
         }
@@ -530,6 +533,31 @@
             color: white;
             font-size: 13px;
         }
+
+        .tippy-box[data-theme~='bardTippy'] {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            color: white;
+        }
+
+        .tippyButton {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 13px;
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            display: inline;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .openSourceButton {
+            background: rgb(23, 109, 236);
+        }
+
+        .addToQueueButton {
+            background: rgb(47, 172, 64);
+        }
     </style>
 </head>
 <body>
@@ -598,9 +626,20 @@
         
     </div>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
+    <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js"></script>
     <script src="/js/slider.js"></script>
 
+
+    <div id="tippyTemplate" style="display: none;">
+        <div style="display:flex;gap:10px;">
+            <button onclick="addToQueue('[[URL]]')" class="tippyButton addToQueueButton">Dodaj do kolejki</button>
+            <button onclick="window.open('[[URL]]', '_blank')" class="tippyButton openSourceButton">Otwórz źródło</button>
+        </div>
+    </div>
     <script>
+        window.tippyInstances = [];
+
         window.onload = function() {
             const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
             const progressSlider = document.querySelector('[slider-id="progressSlider"]');
@@ -655,7 +694,6 @@
                     });
                 })
                 progressSlider.addChangeEvent(function () {
-                    console.log(progressSlider.getSeconds());
                     $.ajax({
                         url: "/api/music/seek", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: progressSlider.getSeconds() }), success: function (result, status) {
                             if (status !== "success" || result.status !== "success") {
@@ -792,13 +830,35 @@
                                 className: "error"
                             }).showToast();
                         } else {
+                            tippyInstances.forEach(instance => {
+                                instance.destroy();
+                            });
+                            tippyInstances.length = 0;
+
                             let res = result.results;
                             let content = "";
                             for (let i = 0; i < res.length; i++) {
                                 const track = res[i];
-                                content += `<span onclick="processSearchClick(this)" data-url="${track.url}"><strong>${track.title}</strong> - ${track.author} @ <strong>${track.source}</strong></span>`
+                                content += `<span data-url="${track.url}"><strong>${track.title}</strong> - ${track.author} @ <strong>${track.source}</strong></span>`
                             }
                             $('.suggestions').html(content);
+
+                            const instances = tippy('.suggestions span', {
+                                allowHTML: true,
+                                trigger: "click",
+                                interactive: true,
+                                arrow: false,
+                                theme: "bardTippy",
+                                animation: "shift-toward-subtle",
+                                appendTo: "parent",
+                                content: (reference) => {
+                                    const url = reference.getAttribute('data-url');
+
+                                    return $('#tippyTemplate').html().replaceAll("[[URL]]", url);
+                                },
+                            });
+                            window.tippyInstances = tippyInstances.concat(instances);
+
                             setAutocomplete(true);
                             autocompleteOffSet = true;
                         }
@@ -818,13 +878,9 @@
             }
         }
 
-        function processSearchClick(element) {
-            const url = $(element).data("url");
-            console.log(url)
-
+        function addToQueue(url) {
             $.ajax({
                 url: "/api/music/play", type: "POST", contentType: 'application/json', data: JSON.stringify({ 'query': url }), success: function (result, status) {
-                    console.log(result.status)
                     if (status !== "success" || result.status !== "success") {
                         Toastify({
                             text: `{{connectionError}}\n${result.status}`,

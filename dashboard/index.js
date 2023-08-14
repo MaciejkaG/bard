@@ -357,7 +357,6 @@ module.exports = {
                                             const { track } = await player.play(member.voice.channel, req.body.query, {
                                                 nodeOptions: {
                                                     metadata: member.voice.channel
-                                                    // metadata: client.channels.cache.get(process.env.DEFAULT_METADATA_CHANNEL)
                                                 },
                                                 fallbackSearchEngine: 'youtube'
                                             });
