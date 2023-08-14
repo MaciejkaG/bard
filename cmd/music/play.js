@@ -31,7 +31,7 @@ module.exports = {
         try {
             const { track } = await interaction.client.player.play(channel, query, {
                 nodeOptions: {
-                    metadata: interaction
+                    metadata: interaction.member.voice.channel
                 },
                 fallbackSearchEngine: 'youtube'
             });

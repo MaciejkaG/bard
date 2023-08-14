@@ -116,7 +116,7 @@
         }
         .pbContainer {
             position: fixed;
-            height: 5rem;
+            height: 5.5rem;
             width: 100%;
             display: flex;
             align-items: center;
@@ -353,7 +353,7 @@
 
         .suggestions {
             height: 0px;
-            /* pointer-events: none; */
+            pointer-events: none;
             user-select: none;
             padding: 0px;
             position: relative;
@@ -470,7 +470,7 @@
             top: calc(8rem - 30px);
             top: -5rem;
             background: black;
-            width: 10rem;
+            width: 15rem;
             height: 15rem;
             font-size: 20px;
             display: flex;
@@ -520,7 +520,13 @@
         }
 
         .error {
-            background: #d93b3b;
+            background: rgba(217, 59, 59, 0.8);
+            color: white;
+            font-size: 13px;
+        }
+
+        .success {
+            background: rgba(47, 172, 64, 0.8);
             color: white;
             font-size: 13px;
         }
@@ -595,59 +601,11 @@
     <script src="/js/slider.js"></script>
 
     <script>
-        function changeTheme(num) {
-            $('.center .cover').css('transition', 'opacity 0.5s');
-            $('.center .cover').css('width', '100vw');
-            $('.center .cover').css('height', '100vh');
-            $('.center .cover').css('opacity', '1');
-            $('.center .cover img').css('animation', 'none');
-            $('.center .cover img').css('transition', 'none');
-            $('.center .cover img').css('opacity', '1');
-            $('.center .cover img').css('animation', 'loading 1s infinite ease');
-            $.ajax({
-                url: "/api/misc/change-theme", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: num }), success: function (result, status) {
-                    if (status !== "success" || result.status !== "success") {
-                        Toastify({
-                            text: `{{connectionError}}\n${result.status}\nReload in 5 seconds`,
-                            duration: 10000,
-                            newWindow: true,
-                            close: true,
-                            gravity: "bottom",
-                            position: "right",
-                            stopOnFocus: true,
-                            className: "error"
-                        }).showToast();
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 5000);
-                    } else {
-                        window.location.reload();
-                    }
-                }, error: function () {
-                    Toastify({
-                        text: "{{connectionError}}",
-                        duration: 3000,
-                        newWindow: true,
-                        close: true,
-                        gravity: "bottom",
-                        position: "right",
-                        stopOnFocus: true,
-                        className: "error"
-                    }).showToast();
-                }
-            });
-        }
-            
-
         window.onload = function() {
             const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
             const progressSlider = document.querySelector('[slider-id="progressSlider"]');
 
-            // volumeSlider.setSliderColor("{{altColor}}");
-            // progressSlider.setSliderColor("{{altColor}}");
-
             volumeSlider.style.setProperty("--slider-fill-color", "{{altColor}}")
-            // progressSlider.setSliderColor("{{altColor}}");
 
             $('.center .cover').css('animation', 'startAnimation ease 2s 1');
             $('.center .cover').css('width', '0');
@@ -755,15 +713,6 @@
                         }
                     });
                 });
-
-                // $(".center input").focus(function () {
-                //     setAutocomplete(true);
-                //     console.log("in");
-                // });
-
-                // $(".center input").focusout(function () {
-                //     setAutocomplete(false);
-                // });
             }, 1000);
         }
 
@@ -808,9 +757,6 @@
                         firstTimeLoading = false;
                     }
                     $(".queueBlock .position").css('opacity', '1');
-                    
-
-                    // $('.queueBlock .position').css("opacity", "1");
                 }
             });
         }
@@ -850,7 +796,7 @@
                             let content = "";
                             for (let i = 0; i < res.length; i++) {
                                 const track = res[i];
-                                content += `<span onclick="window.open('${track.url}', '_blank')"><strong>${track.title}</strong> - ${track.author} @ <strong>${track.source}</strong></span>`
+                                content += `<span onclick="processSearchClick(this)" data-url="${track.url}"><strong>${track.title}</strong> - ${track.author} @ <strong>${track.source}</strong></span>`
                             }
                             $('.suggestions').html(content);
                             setAutocomplete(true);
@@ -872,6 +818,94 @@
             }
         }
 
+        function processSearchClick(element) {
+            const url = $(element).data("url");
+            console.log(url)
+
+            $.ajax({
+                url: "/api/music/play", type: "POST", contentType: 'application/json', data: JSON.stringify({ 'query': url }), success: function (result, status) {
+                    console.log(result.status)
+                    if (status !== "success" || result.status !== "success") {
+                        Toastify({
+                            text: `{{connectionError}}\n${result.status}`,
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "bottom",
+                            position: "right",
+                            stopOnFocus: true,
+                            className: "error"
+                        }).showToast();
+                    } else {
+                        Toastify({
+                            text: `{{addedToQueue}}`,
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "bottom",
+                            position: "right",
+                            stopOnFocus: true,
+                            className: "success"
+                        }).showToast();
+                    }
+                }, error: function () {
+                    Toastify({
+                        text: "{{connectionError}}",
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        className: "error"
+                    }).showToast();
+                }
+            });
+        }
+
+        function changeTheme(num) {
+            $('.center .cover').css('transition', 'opacity 0.5s');
+            $('.center .cover').css('width', '100vw');
+            $('.center .cover').css('height', '100vh');
+            $('.center .cover').css('opacity', '1');
+            $('.center .cover img').css('animation', 'none');
+            $('.center .cover img').css('transition', 'none');
+            $('.center .cover img').css('opacity', '1');
+            $('.center .cover img').css('animation', 'loading 1s infinite ease');
+            $.ajax({
+                url: "/api/misc/change-theme", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: num }), success: function (result, status) {
+                    if (status !== "success" || result.status !== "success") {
+                        Toastify({
+                            text: `{{connectionError}}\n${result.status}\nReload in 5 seconds`,
+                            duration: 10000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "bottom",
+                            position: "right",
+                            stopOnFocus: true,
+                            className: "error"
+                        }).showToast();
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 5000);
+                    } else {
+                        window.location.reload();
+                    }
+                }, error: function () {
+                    Toastify({
+                        text: "{{connectionError}}",
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        className: "error"
+                    }).showToast();
+                }
+            });
+        }
+
         var autocompleteOn = false;
         var lastAutocompleteChange = 0;
 
@@ -889,6 +923,7 @@
                     $('.suggestions').css('box-shadow', 'none');
                     $('.suggestions').css('top', '0');
                     $('.suggestions').css('line-height', '0');
+                    $('.suggestions').css('pointer-events', 'none');
                     autocompleteOn = false;
                 } else if (status && !autocompleteOn) {
                     $('.suggestions span').css('animation', 'autocompleteSpanR ease 1 1s');
@@ -899,6 +934,7 @@
                     $('.suggestions').css('box-shadow', '0 0 30px 1px rgba(0, 0, 0, 0.6)');
                     $('.suggestions').css('top', '1rem');
                     $('.suggestions').css('line-height', '2rem');
+                    $('.suggestions').css('pointer-events', 'all');
                     autocompleteOn = true;
                 }
                 lastAutocompleteChange = Date.now();

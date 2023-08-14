@@ -54,7 +54,7 @@ module.exports = {
                 if (checkLoggedIn(req)) {
                     res.redirect("/dashboard")
                 } else {
-                    res.redirect(`https://discord.com/api/oauth2/authorize?client_id=1138900172651380818&redirect_uri=${encodeURI(process.env.REDIRECT)}%2Fapi%2Fauth%2Fredirect&response_type=code&scope=identify%20guilds`)
+                    res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${encodeURI(process.env.BOT_CLIENT_ID)}&redirect_uri=${encodeURI(process.env.REDIRECT)}%2Fapi%2Fauth%2Fredirect&response_type=code&scope=identify%20guilds`)
                 }
             })
 
@@ -110,7 +110,7 @@ module.exports = {
                                     }
 
                                     let template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/dashboard.html'), 'utf8'));
-                                    res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed"), connectionError: lang.getText("connectionError"), redirect: process.env.REDIRECT, queue: lang.getText("queue"), themes: lang.getText("themes"), themeList: themeListHTML, mainColor1: theme.mainColor1, mainColor2: theme.mainColor2, altColor: theme.altColor }));
+                                    res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed"), connectionError: lang.getText("connectionError"), redirect: process.env.REDIRECT, queue: lang.getText("queue"), themes: lang.getText("themes"), addedToQueue: lang.getText("addedToQueue"), themeList: themeListHTML, mainColor1: theme.mainColor1, mainColor2: theme.mainColor2, altColor: theme.altColor }));
                                 });
                                 
                             })
@@ -118,7 +118,7 @@ module.exports = {
                     })
 
                 } else {
-                    res.redirect(`https://discord.com/api/oauth2/authorize?client_id=1138900172651380818&redirect_uri=${encodeURI(process.env.REDIRECT)}%2Fapi%2Fauth%2Fredirect&response_type=code&scope=identify%20guilds`)
+                    res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${encodeURI(process.env.BOT_CLIENT_ID)}&redirect_uri=${encodeURI(process.env.REDIRECT)}%2Fapi%2Fauth%2Fredirect&response_type=code&scope=identify%20guilds`)
                 }
             })
             
@@ -238,6 +238,7 @@ module.exports = {
                             if (checkUserInChannel(user.id, queue.channel)) {
                                 const queue = useQueue(process.env.GUILD_ID);
                                 queue.node.skip();
+                                queue.metadata.send(`${user.username} ${lang.getText("userSkipped")}: \`\`${queue.currentTrack.title}\`\` ${lang.getText("usingDashboard")}`);
                                 res.send({ status: "success" });
                             } else {
                                 res.send({ status: "userNotInBotChannel" });
@@ -265,6 +266,7 @@ module.exports = {
                                     res.send({ status: "valueError" });
                                 } else {
                                     queue.node.seek(req.body.target * 1000);
+                                    queue.metadata.send(`${user.username} ${lang.getText("userSeeked")} \`\`${queue.currentTrack.title}\`\` ${lang.getText("usingDashboard")}`);
                                     res.send({ status: "success" });
                                 }
                             } else {
@@ -290,6 +292,7 @@ module.exports = {
                                 } else {
                                     const queue = useQueue(process.env.GUILD_ID);
                                     queue.node.setVolume(req.body.target);
+                                    queue.metadata.send(`${user.username} ${lang.getText("userSetVolume")} \`\`${queue.node.volume}%\`\` ${lang.getText("usingDashboard")}`);
                                     res.send({ status: "success" });
                                 }
                             } else {
@@ -307,7 +310,7 @@ module.exports = {
                 if (checkLoggedIn(req)) {
                     if (req.session.isInGuild) {
                         oauth.getUser(req.session.access_token).then(user => {
-                            if (req.body.query == null || req.body.query.length < 0 || typeof req.body.query !== "string" || req.body.query.length > 50) {
+                            if (req.body.query == null || req.body.query.length < 0 || typeof req.body.query !== "string" || req.body.query.length > 100) {
                                 res.send({ status: "valueError" });
                             } else {
                                 const player = useMainPlayer();
@@ -326,6 +329,48 @@ module.exports = {
                                         });
                                     }
                                 });
+                            }
+                        })
+                    } else {
+                        res.send({ status: "permissionError" })
+                    }
+                } else {
+                    res.send({ status: "notLoggedIn" });
+                }
+            })
+
+            app.post('/api/music/play', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    if (req.session.isInGuild) {
+                        oauth.getUser(req.session.access_token).then(user => {
+                            if (req.body.query == null || req.body.query.length < 0 || typeof req.body.query !== "string" || req.body.query.length > 100) {
+                                res.send({ status: "valueError" });
+                            } else {
+                                const player = useMainPlayer();
+
+                                const guild = client.guilds.cache.get(process.env.GUILD_ID);
+                                const member = guild.members.cache.get(user.id);
+
+                                if (member.voice.channel) {
+                                    (async () => {
+                                        try {
+                                            const { track } = await player.play(member.voice.channel, req.body.query, {
+                                                nodeOptions: {
+                                                    metadata: member.voice.channel
+                                                    // metadata: client.channels.cache.get(process.env.DEFAULT_METADATA_CHANNEL)
+                                                },
+                                                fallbackSearchEngine: 'youtube'
+                                            });
+                                            member.voice.channel.send(`${user.username} ${lang.getText("userAddedToQueue")} \`\`${track.title}\`\` ${lang.getText("usingDashboard")}`);
+                                            res.send({ status: "success" })
+                                        } catch (e) {
+                                            console.log(e)
+                                            res.send({ status: "unknownError" })
+                                        }
+                                    })();
+                                } else {
+                                    res.send({ status: "notInVoiceChannel" });
+                                };
                             }
                         })
                     } else {

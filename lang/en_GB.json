@@ -7,6 +7,13 @@
     "volumeChanged": "Volume changed to",
     "trackSkipped": "Song skipped",
     "loopModeSet": "Loop mode changed",
+
+    "userAddedToQueue": "added a song to queue",
+    "userSkipped": "just skipped",
+    "userSetVolume": "just set the volume to",
+    "userSeeked": "just seeked",
+
+    "usingDashboard": "using Bard's web dashboard",
     
     "rootSubtitle": "Bard is an advanced open-source Discord music bot.",
     "login": "Proceed to dashboard login",
@@ -21,6 +28,7 @@
     "backHome": "Go back to Home",
     "queue": "Queue",
     "themes": "Themes",
+    "addedToQueue": "Successfully added a song to queue!",
     "connectionError": "Connection error",
     "authorisationError": "An authorisation error occured, try again later.",
     "permissionError": "You aren't permitted to use this dashboard.",

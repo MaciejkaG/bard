@@ -17,7 +17,7 @@ client.language = new lib.localisation.language(process.env.LANGUAGE);
     await client.player.extractors.load
     await client.player.extractors.loadDefault();
     client.player.events.on('playerStart', (queue, track) => {
-        queue.metadata.channel.send(`${client.language.getText("startedPlaying")}: \`\`${track.title}\`\` @ ${track.source}`);
+        queue.metadata.send(`${client.language.getText("startedPlaying")}: \`\`${track.title}\`\` @ ${track.source}`);
     });
 })();
 

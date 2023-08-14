@@ -1,7 +1,7 @@
 {
     "themes": [
         {
-            "name": "Red light",
+            "name": "Red Light",
             "mainColor1": "#870000",
             "mainColor2": "#190a05",
             "altColor": "#ed2929"
@@ -13,16 +13,112 @@
             "altColor": "#ff21e5"
         },
         {
-            "name": "Wild berry",
+            "name": "Wild Berry",
             "mainColor1": "#dc2430",
             "mainColor2": "#7b4397",
             "altColor": "#e32d58"
         },
         {
-            "name": "Amethyst ocean",
+            "name": "Amethyst Ocean",
             "mainColor1": "#0b8793",
             "mainColor2": "#360033",
             "altColor": "#096485"
+        },
+        {
+            "name": "Blood Flow",
+            "mainColor1": "#240b36",
+            "mainColor2": "#c31432",
+            "altColor": "#ed1a36"
+        },
+        {
+            "name": "Moonlit Serenade",
+            "mainColor1": "#1a1c42",
+            "mainColor2": "#05060e",
+            "altColor": "#283364"
+        },
+        {
+            "name": "Golden Sahara",
+            "mainColor1": "#c39700",
+            "mainColor2": "#6b5404",
+            "altColor": "#e5b200"
+        },
+        {
+            "name": "Mystic Forest",
+            "mainColor1": "#024b05",
+            "mainColor2": "#151f0a",
+            "altColor": "#076605"
+        },
+        {
+            "name": "Silent Whispers",
+            "mainColor1": "#5e738a",
+            "mainColor2": "#161c22",
+            "altColor": "#364c5f"
+        },
+        {
+            "name": "Crimson Horizon",
+            "mainColor1": "#6c0d12",
+            "mainColor2": "#1b0408",
+            "altColor": "#910e15"
+        },
+        {
+            "name": "Aurora Borealis",
+            "mainColor1": "#0b345a",
+            "mainColor2": "#10121a",
+            "altColor": "#1660a8"
+        },
+        {
+            "name": "Enchanted Rose",
+            "mainColor1": "#6e000b",
+            "mainColor2": "#260104",
+            "altColor": "#9c0015"
+        },
+        {
+            "name": "Sapphire Dreams",
+            "mainColor1": "#08325b",
+            "mainColor2": "#030b1f",
+            "altColor": "#105090"
+        },
+        {
+            "name": "Emerald Echoes",
+            "mainColor1": "#026b3b",
+            "mainColor2": "#051409",
+            "altColor": "#038f54"
+        },
+        {
+            "name": "Dusky Orchid",
+            "mainColor1": "#410d4b",
+            "mainColor2": "#140407",
+            "altColor": "#650d7c"
+        },
+        {
+            "name": "Amber Twilight",
+            "mainColor1": "#7c5503",
+            "mainColor2": "#1a1201",
+            "altColor": "#a47c03"
+        },
+        {
+            "name": "Silver Lining",
+            "mainColor1": "#575b62",
+            "mainColor2": "#1e2025",
+            "altColor": "#80848b"
+        },
+        {
+            "name": "Ocean's Embrace",
+            "mainColor1": "#0a617a",
+            "mainColor2": "#040c15",
+            "altColor": "#1687a6"
+        },
+        {
+            "name": "Autumn Whisper",
+            "mainColor1": "#a45700",
+            "mainColor2": "#33110c",
+            "altColor": "#c76c00"
+        },
+        {
+            "name": "Ivory Enigma",
+            "mainColor1": "#dfd5c8",
+            "mainColor2": "#2e2a24",
+            "altColor": "#f3eadb"
         }
     ]
 }

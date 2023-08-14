@@ -8,6 +8,13 @@
     "trackSkipped": "Pominięto piosenkę",
     "loopModeSet": "Zmieniono tryb pętli",
 
+    "userAddedToQueue": "właśnie dodał piosenkę do kolejki",
+    "userSkipped": "właśnie pominął",
+    "userSetVolume": "właśnie ustawił głośność na",
+    "userSeeked": "właśnie przewinął",
+
+    "usingDashboard": "poprzez internetowy dashboard Barda",
+
     "rootSubtitle": "Bard to zaawansowany bot Discord do muzyki z otwartym kodem źródłowym.",
     "login": "Przejdź do logowania w dashboardzie",
     "noLogin": "Przejdź do dashboardu",
@@ -21,6 +28,7 @@
     "backHome": "Powróć do Strony głównej",
     "queue": "Kolejka",
     "themes": "Motywy",
+    "addedToQueue": "Pomyślnie dodano piosenkę do kolejki!",
     "connectionError": "Błąd połączenia",
     "authorisationError": "Wystąpił błąd autoryzacji, spróbuj ponownie później.",
     "permissionError": "Nie jesteś uprawniony(-a) do korzystania z tego dashboardu.",
