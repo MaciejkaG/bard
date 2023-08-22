@@ -143,6 +143,49 @@ module.exports = {
                 }
             })
 
+            app.post('/api/music/get-current-channel', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    oauth.getUser(req.session.access_token).then(user => {
+                        const queue = useQueue(process.env.GUILD_ID);
+                        if (queue == null) {
+                            res.send({ status: "queueNoExist" });
+                        } else {
+                            if (checkUserInChannel(user.id, queue.channel)) {
+                                if (queue == null || queue.tracks.length === 0) {
+                                    res.send({ "status": "queueEmpty" });
+                                } else {
+                                    if (queue == null || queue.tracks.length === 0) {
+                                        res.send({ "status": "noTrack" });
+                                    } else {
+                                        res.send({ "status": "success", "channelName": queue.channel.name })
+                                        // console.log();
+                                        // if (queue.currentTrack != null) {
+                                        //     let track;
+                                        //     try {
+                                        //         track = queue.currentTrack.toJSON();
+                                        //         track.progress = queue.node.getTimestamp(false).current.value;
+                                        //         track.volume = queue.node.volume;
+                                        //         track.paused = queue.node.isPaused();
+                                        //     } catch {
+                                        //         res.send({ "status": "trackGetError" });
+                                        //         return
+                                        //     }
+                                        //     res.send({ status: "success", track: track });
+                                        // } else {
+                                        //     res.send({ "status": "noTrack" });
+                                        // }
+                                    }
+                                }
+                            } else {
+                                res.send({ status: "userNotInBotChannel" });
+                            }
+                        }
+                    })
+                } else {
+                    res.send({ status: "notLoggedIn" });
+                }
+            })
+
             app.post('/api/music/get-current-track', (req, res) => {
                 if (checkLoggedIn(req)) {
                     oauth.getUser(req.session.access_token).then(user => {
