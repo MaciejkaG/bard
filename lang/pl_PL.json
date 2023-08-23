@@ -9,11 +9,13 @@
     "loopModeSet": "Zmieniono tryb pętli",
 
     "userAddedToQueue": "właśnie dodał piosenkę do kolejki",
+    "userRemovedFromQueue": "właśnie usunął piosenkę z kolejki",
     "userSkipped": "właśnie pominął",
     "userSetVolume": "właśnie ustawił głośność na",
     "userSeeked": "właśnie przewinął",
 
     "addToQueue": "Dodaj do kolejki",
+    "removeFromQueue": "Usuń z kolejki",
     "openSource": "Otwórz źródło",
 
     "usingDashboard": "poprzez internetowy dashboard Barda",
@@ -33,6 +35,7 @@
     "themes": "Motywy",
     "lyrics": "Tekst",
     "addedToQueue": "Pomyślnie dodano piosenkę do kolejki!",
+    "removedFromQueue": "Pomyślnie usunięto piosenkę z kolejki!",
     "connectionError": "Błąd połączenia",
     "authorisationError": "Wystąpił błąd autoryzacji, spróbuj ponownie później.",
     "permissionError": "Nie jesteś uprawniony(-a) do korzystania z tego dashboardu.",

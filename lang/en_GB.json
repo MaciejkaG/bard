@@ -8,12 +8,14 @@
     "trackSkipped": "Song skipped",
     "loopModeSet": "Loop mode changed",
 
-    "userAddedToQueue": "added a song to queue",
+    "userAddedToQueue": "just added a song to queue",
+    "userRemovedFromQueue": "just removed a song from queue",
     "userSkipped": "just skipped",
     "userSetVolume": "just set the volume to",
     "userSeeked": "just seeked",
 
     "addToQueue": "Add to queue",
+    "removeFromQueue": "Remove from queue",
     "openSource": "Open source",
 
     "usingDashboard": "using Bard's web dashboard",
@@ -33,6 +35,7 @@
     "themes": "Themes",
     "lyrics": "Lyrics",
     "addedToQueue": "Successfully added a song to queue!",
+    "removedFromQueue": "Successfully removed a song from queue!",
     "connectionError": "Connection error",
     "authorisationError": "An authorisation error occured, try again later.",
     "permissionError": "You aren't permitted to use this dashboard.",

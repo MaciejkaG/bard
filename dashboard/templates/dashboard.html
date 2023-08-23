@@ -82,6 +82,7 @@
             background: rgb(20, 20, 20);
             border-radius: 15px;
             opacity: 0;
+            cursor: pointer;
         }
         .queueBlock .position h1 {
             font-size: 20px;
@@ -255,7 +256,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 102;
-            transition: opacity 0.5s;
+            transition: opacity 0.4s;
         }
 
         .center input {
@@ -540,6 +541,7 @@
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(5px);
             color: white;
+            border-radius: 10px;
         }
 
         .tippyButton {
@@ -559,6 +561,10 @@
 
         .addToQueueButton {
             background: rgb(47, 172, 64);
+        }
+
+        .removeFromQueueButton {
+            background: rgb(217, 59, 59);
         }
 
         .eq-bar {
@@ -669,6 +675,7 @@
             border-top-left-radius: 10px;
             border-bottom-left-radius: 10px;
             pointer-events: none;
+            z-index: 103;
         }
         .lyricsContainer:hover {
             right: 0;
@@ -797,8 +804,17 @@
             <button onclick="window.open('[[URL]]', '_blank')" class="tippyButton openSourceButton">{{openSource}}</button>
         </div>
     </div>
+    <div id="queueTippyTemplate" style="display: none;">
+        <div style="display:flex;gap:10px;">
+            <button onclick="removeFromQueue('[[ELEM_ID]]')" class="tippyButton removeFromQueueButton">{{removeFromQueue}}</button>
+            <button onclick="window.open('[[URL]]', '_blank')" class="tippyButton openSourceButton">{{openSource}}</button>
+        </div>
+    </div>
     <script>
         window.tippyInstances = [];
+        window.queueTippyInstances = [];
+
+        var queueUpdateInterval;
 
         window.onload = function() {
             const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
@@ -819,7 +835,7 @@
                 updateLyrics();
                 setInterval(updateCurrentChannel, 5000);
                 setInterval(updateCurrentTrack, 1000);
-                setInterval(updateQueue, 10000);
+                queueUpdateInterval = (updateQueue, 10000);
                 setInterval(updateLyrics, 10000);
                 $("#pause").click(function () {
                     $.post("/api/music/pause", function (data, status) {
@@ -955,27 +971,22 @@
                 }
             });
         }
-        // $(".lyricsContainer").mouseenter(function() {
-        //     setLyricsPos('shown');
-        // })
 
-        // $(".lyricsContainer").mouseleave(function () {
-        //     setLyricsPos('hidden');
-        // })
+        var mouseOver = false;
 
         function updateLyrics() {
             $.post("/api/music/get-lyrics", function (data, status) {
                 if (status === "success" && data.status === "success") {
-                    console.log(data.lyrics);
                     $(".lyricsContainer .lyrics").html(data.lyrics.replace(/\n/g, "<br />").replace(/\[+([^\][]+)]+/g, '<span class="header">$1</span>'))
-                    setLyricsPos("hidden");
+                    if (!mouseOver) {
+                        setLyricsPos("hidden");
+                    }
                     let track = data.channelName;
                     $('.channelIndicatorContainer .channelIndicator').attr("title", data.channelName);
                     $('.channelIndicatorContainer .channelIndicator span').html(data.channelName);
                     $('.channelIndicatorContainer').css('transform', 'translateY(0)');
                 } else {
                     setLyricsPos("noTrack");
-                    console.log(data.status);
                 }
             });
         }
@@ -986,16 +997,19 @@
                 $(".center").css("opacity", "1");
                 $(".center").css("mouse-events", "all");
                 $(".lyricsContainer").css("pointer-events", "none");
+                mouseOver = false;
             } else if (state==="hidden") {
                 $(".lyricsContainer").css("right", "calc(-30vw - 1rem)");
                 $(".center").css("opacity", "1");
                 $(".center").css("mouse-events", "all");
                 $(".lyricsContainer").css("pointer-events", "all");
+                mouseOver = false;
             } else if (state==="shown") {
                 $(".lyricsContainer").css("right", "0");
                 $(".center").css("opacity", "0");
                 $(".center").css("mouse-events", "none");
                 $(".lyricsContainer").css("pointer-events", "all");
+                mouseOver = true;
 
             }
         }
@@ -1008,14 +1022,84 @@
                     let queueHTML = "";
                     for (let i = 0; i < data.tracks.length; i++) {
                         const track = data.tracks[i];
-                        queueHTML += `<div class="position"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
+                        queueHTML += `<div class="position" id="${Math.random()}" url="${track.url}"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
                     }
+
                     $("#queue").html(queueHTML);
                     if (firstTimeLoading) {
                         $(".queueBlock .position").animate({ opacity: '1' }, 500);
                         firstTimeLoading = false;
                     }
+
+
+                    queueTippyInstances.forEach(instance => {
+                        instance.destroy();
+                    });
+                    queueTippyInstances.length = 0;
+
+                    const instances = tippy('.queueBlock .position', {
+                        allowHTML: true,
+                        trigger: "click",
+                        interactive: true,
+                        arrow: false,
+                        theme: "bardTippy",
+                        animation: "shift-toward-subtle",
+                        appendTo: "parent",
+                        content: (reference) => {
+                            const url = $(reference).attr('data-url');
+
+                            return $('#queueTippyTemplate').html().replaceAll("[[URL]]", url).replaceAll("[[ELEM_ID]]", reference.id);
+                        },
+                    });
+                    window.queueTippyInstances = queueTippyInstances.concat(instances);
                     $(".queueBlock .position").css('opacity', '1');
+                }
+            });
+        }
+
+        function removeFromQueue(elem_id) {
+            let elem = document.getElementById(elem_id);
+            let parent = elem.parentNode;
+            const id = Array.prototype.indexOf.call(parent.children, elem);
+            console.log(id);
+            $.ajax({
+                url: "/api/music/remove-from-queue", type: "POST", contentType: 'application/json', data: JSON.stringify({ 'target': id }), success: function (result, status) {
+                    if (status !== "success" || result.status !== "success") {
+                        Toastify({
+                            text: `{{connectionError}}\n${result.status}`,
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "bottom",
+                            position: "right",
+                            stopOnFocus: true,
+                            className: "error"
+                        }).showToast();
+                    } else {
+                        Toastify({
+                            text: `{{removedFromQueue}}`,
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "bottom",
+                            position: "right",
+                            stopOnFocus: true,
+                            className: "success"
+                        }).showToast();
+                        clearInterval(queueUpdateInterval);
+                        updateQueue();
+                    }
+                }, error: function () {
+                    Toastify({
+                        text: "{{connectionError}}",
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        className: "error"
+                    }).showToast();
                 }
             });
         }
@@ -1124,6 +1208,8 @@
                             stopOnFocus: true,
                             className: "success"
                         }).showToast();
+                        clearInterval(queueUpdateInterval);
+                        updateQueue();
                     }
                 }, error: function () {
                     Toastify({

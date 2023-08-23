@@ -112,7 +112,7 @@ module.exports = {
                                     }
 
                                     let template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/dashboard.html'), 'utf8'));
-                                    res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed"), connectionError: lang.getText("connectionError"), redirect: process.env.REDIRECT, queue: lang.getText("queue"), themes: lang.getText("themes"), lyrics: lang.getText("lyrics"), addedToQueue: lang.getText("addedToQueue"), addToQueue: lang.getText("addToQueue"), openSource: lang.getText("openSource"), themeList: themeListHTML, mainColor1: theme.mainColor1, mainColor2: theme.mainColor2, altColor: theme.altColor }));
+                                    res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed"), connectionError: lang.getText("connectionError"), redirect: process.env.REDIRECT, queue: lang.getText("queue"), themes: lang.getText("themes"), lyrics: lang.getText("lyrics"), addedToQueue: lang.getText("addedToQueue"), addToQueue: lang.getText("addToQueue"), openSource: lang.getText("openSource"), removedFromQueue: lang.getText("removedFromQueue"), removeFromQueue: lang.getText("removeFromQueue"), themeList: themeListHTML, mainColor1: theme.mainColor1, mainColor2: theme.mainColor2, altColor: theme.altColor }));
                                 });
                                 
                             })
@@ -199,8 +199,11 @@ module.exports = {
                                                     res.send({ "status": "success", "lyrics": await song.lyrics() });
                                                 }
                                             } catch (e) {
-                                                console.log(e);
-                                                res.send({ status: "unknownError" });
+                                                if (e.toString().includes("NoResultError")) {
+                                                    res.send({ status: "noResults" });
+                                                } else {
+                                                    res.send({ status: "unknownError" });
+                                                }
                                             }
                                         })();
                                     }
@@ -362,7 +365,6 @@ module.exports = {
                                 if (req.body.target == null || !Number.isInteger(req.body.target) || req.body.target < 0 || req.body.target > 100) {
                                     res.send({ status: "valueError" });
                                 } else {
-                                    const queue = useQueue(process.env.GUILD_ID);
                                     queue.node.setVolume(req.body.target);
                                     queue.metadata.send(`${user.username} ${lang.getText("userSetVolume")} \`\`${queue.node.volume}%\`\` ${lang.getText("usingDashboard")}`);
                                     res.send({ status: "success" });
@@ -447,6 +449,37 @@ module.exports = {
                     } else {
                         res.send({ status: "permissionError" })
                     }
+                } else {
+                    res.send({ status: "notLoggedIn" });
+                }
+            })
+
+            app.post('/api/music/remove-from-queue', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    oauth.getUser(req.session.access_token).then(user => {
+                        const queue = useQueue(process.env.GUILD_ID);
+                        if (queue == null) {
+                            res.send({ status: "queueNoExist" });
+                        } else {
+                            if (checkUserInChannel(user.id, queue.channel)) {
+                                if (req.body.target == null || !Number.isInteger(req.body.target) || req.body.target < 0 || req.body.target > queue.tracks.toArray().length) {
+                                    res.send({ status: "valueError" });
+                                } else {
+                                    if (queue.tracks.toArray()[req.body.target]==null) {
+                                        res.send({ status: "valueError" });
+                                    } else {
+                                        let track = queue.tracks.toArray()[req.body.target];
+                                        queue.removeTrack(req.body.target);
+                                        queue.metadata.send(`${user.username} ${lang.getText("userRemovedFromQueue")} \`\`${track.title}\`\` ${lang.getText("usingDashboard")}`);
+                                        res.send({ status: "success" });
+                                    }
+                                }
+                            } else {
+                                res.send({ status: "userNotInBotChannel" });
+                            }
+
+                        }
+                    })
                 } else {
                     res.send({ status: "notLoggedIn" });
                 }
