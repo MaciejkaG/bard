@@ -13,6 +13,9 @@
     "userSetVolume": "just set the volume to",
     "userSeeked": "just seeked",
 
+    "addToQueue": "Add to queue",
+    "openSource": "Open source",
+
     "usingDashboard": "using Bard's web dashboard",
     
     "rootSubtitle": "Bard is an advanced open-source Discord music bot.",
