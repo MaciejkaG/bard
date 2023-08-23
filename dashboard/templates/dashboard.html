@@ -722,7 +722,7 @@
         </div>
         <div class="cover"><img src="/img/logo-nobg.png" alt="logo"></div>
     </div>
-    <div class="lyricsContainer">
+    <div class="lyricsContainer" onmouseover="setLyricsPos('shown');" onmouseout="setLyricsPos('hidden');">
         <div class="title">
             <span>{{lyrics}}</span>
         </div>
@@ -955,13 +955,13 @@
                 }
             });
         }
-        $(".lyricsContainer").mouseenter(function() {
-            setLyricsPos('shown');
-        })
+        // $(".lyricsContainer").mouseenter(function() {
+        //     setLyricsPos('shown');
+        // })
 
-        $(".lyricsContainer").mouseleave(function () {
-            setLyricsPos('hidden');
-        })
+        // $(".lyricsContainer").mouseleave(function () {
+        //     setLyricsPos('hidden');
+        // })
 
         function updateLyrics() {
             $.post("/api/music/get-lyrics", function (data, status) {
