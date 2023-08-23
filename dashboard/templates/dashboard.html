@@ -255,6 +255,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 102;
+            transition: opacity 0.5s;
         }
 
         .center input {
@@ -649,6 +650,67 @@
         .channelIndicatorContainer span img {
             height: 1em;
         }
+
+        .lyricsContainer {
+            position: fixed;
+            right: 0;
+            top: calc(50% + 2rem);
+            transform: translateY(-50%);
+            right: calc(-30vw - 7rem);
+            transition: right 0.5s;
+            height: 70vh;
+            display: flex;
+            max-height: 50%;
+            background: black;
+            box-shadow: 0 0 30px 1px rgba(0, 0, 0, 0.6);
+            padding: 1rem;
+            padding-left: 0;
+            box-sizing: border-box;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            pointer-events: none;
+        }
+        .lyricsContainer:hover {
+            right: 0;
+        }
+        .lyricsContainer p {
+            padding-bottom: 1rem;
+            box-sizing: border-box;
+            overflow: hidden;
+            overflow-y: scroll;
+            width: 30vw;
+            font-size: 15px;
+        }
+        .lyricsContainer p .header {
+            font-size: 23px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+        .lyricsContainer p::-webkit-scrollbar {
+            display: none;
+        }
+        .lyricsContainer p br {
+            margin: 0.9em 0;
+            display: block;
+            content: " ";
+        }
+        .lyricsContainer .title {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 3em;
+            font-family: 'Lato', sans-serif;
+            opacity: 0.7;
+            font-size: 24px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            pointer-events: none;
+            user-select: none;
+        }
+        .lyricsContainer .title span {
+            transform: rotate(-90deg);
+        }
     </style>
 </head>
 <body>
@@ -659,6 +721,12 @@
             <div class="suggestions"></div>
         </div>
         <div class="cover"><img src="/img/logo-nobg.png" alt="logo"></div>
+    </div>
+    <div class="lyricsContainer">
+        <div class="title">
+            <span>{{lyrics}}</span>
+        </div>
+        <p class="lyrics"></p>
     </div>
     <div class="pbContainer">
         <div class="playbar">
@@ -748,9 +816,11 @@
                 updateCurrentChannel();
                 updateCurrentTrack();
                 updateQueue();
+                updateLyrics();
                 setInterval(updateCurrentChannel, 5000);
                 setInterval(updateCurrentTrack, 1000);
                 setInterval(updateQueue, 10000);
+                setInterval(updateLyrics, 10000);
                 $("#pause").click(function () {
                     $.post("/api/music/pause", function (data, status) {
                         if (status === "success" && data.status === "success") {
@@ -884,6 +954,50 @@
                     $('.pbContainer').css('pointer-events', 'none');
                 }
             });
+        }
+        $(".lyricsContainer").mouseenter(function() {
+            setLyricsPos('shown');
+        })
+
+        $(".lyricsContainer").mouseleave(function () {
+            setLyricsPos('hidden');
+        })
+
+        function updateLyrics() {
+            $.post("/api/music/get-lyrics", function (data, status) {
+                if (status === "success" && data.status === "success") {
+                    console.log(data.lyrics);
+                    $(".lyricsContainer .lyrics").html(data.lyrics.replace(/\n/g, "<br />").replace(/\[+([^\][]+)]+/g, '<span class="header">$1</span>'))
+                    setLyricsPos("hidden");
+                    let track = data.channelName;
+                    $('.channelIndicatorContainer .channelIndicator').attr("title", data.channelName);
+                    $('.channelIndicatorContainer .channelIndicator span').html(data.channelName);
+                    $('.channelIndicatorContainer').css('transform', 'translateY(0)');
+                } else {
+                    setLyricsPos("noTrack");
+                    console.log(data.status);
+                }
+            });
+        }
+
+        function setLyricsPos(state) {
+            if (state==="noTrack") {
+                $(".lyricsContainer").css("right", "calc(-30vw - 7rem)");
+                $(".center").css("opacity", "1");
+                $(".center").css("mouse-events", "all");
+                $(".lyricsContainer").css("pointer-events", "none");
+            } else if (state==="hidden") {
+                $(".lyricsContainer").css("right", "calc(-30vw - 1rem)");
+                $(".center").css("opacity", "1");
+                $(".center").css("mouse-events", "all");
+                $(".lyricsContainer").css("pointer-events", "all");
+            } else if (state==="shown") {
+                $(".lyricsContainer").css("right", "0");
+                $(".center").css("opacity", "0");
+                $(".center").css("mouse-events", "none");
+                $(".lyricsContainer").css("pointer-events", "all");
+
+            }
         }
 
         var firstTimeLoading = true;

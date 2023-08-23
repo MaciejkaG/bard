@@ -31,6 +31,7 @@
     "backHome": "Go back to Home",
     "queue": "Queue",
     "themes": "Themes",
+    "lyrics": "Lyrics",
     "addedToQueue": "Successfully added a song to queue!",
     "connectionError": "Connection error",
     "authorisationError": "An authorisation error occured, try again later.",

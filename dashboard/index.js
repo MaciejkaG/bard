@@ -10,6 +10,7 @@ const lib = require("../utils");
 const querystring = require("querystring");
 const fs = require('fs');
 const { useQueue, useMainPlayer } = require("discord-player");
+const genius = require("genius-lyrics");
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database(path.join(__dirname, "../db/main.db"));
 const lang = new lib.localisation.language(process.env.LANGUAGE);
@@ -24,6 +25,7 @@ module.exports = {
             clientSecret: process.env.CLIENT_SECRET,
             redirectUri: `${process.env.REDIRECT}/api/auth/redirect`,
         });
+        const geniusClient = new genius.Client();
 
         app.use(express.static(path.join(__dirname, 'public')))
         app.use(express.json());
@@ -110,7 +112,7 @@ module.exports = {
                                     }
 
                                     let template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/dashboard.html'), 'utf8'));
-                                    res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed"), connectionError: lang.getText("connectionError"), redirect: process.env.REDIRECT, queue: lang.getText("queue"), themes: lang.getText("themes"), addedToQueue: lang.getText("addedToQueue"), addToQueue: lang.getText("addToQueue"), openSource: lang.getText("openSource"), themeList: themeListHTML, mainColor1: theme.mainColor1, mainColor2: theme.mainColor2, altColor: theme.altColor }));
+                                    res.send(template({ queueFetchFailed: lang.getText("queueFetchFailed"), trackFetchFailed: lang.getText("trackFetchFailed"), connectionError: lang.getText("connectionError"), redirect: process.env.REDIRECT, queue: lang.getText("queue"), themes: lang.getText("themes"), lyrics: lang.getText("lyrics"), addedToQueue: lang.getText("addedToQueue"), addToQueue: lang.getText("addToQueue"), openSource: lang.getText("openSource"), themeList: themeListHTML, mainColor1: theme.mainColor1, mainColor2: theme.mainColor2, altColor: theme.altColor }));
                                 });
                                 
                             })
@@ -150,30 +152,57 @@ module.exports = {
                         if (queue == null) {
                             res.send({ status: "queueNoExist" });
                         } else {
+                            if (queue == null || queue.tracks.length === 0) {
+                                res.send({ "status": "queueEmpty" });
+                            } else {
+                                if (queue == null || queue.tracks.length === 0) {
+                                    res.send({ "status": "noTrack" });
+                                } else {
+                                    res.send({ "status": "success", "channelName": queue.channel.name })
+                                }
+                            }
+                        }
+                    })
+                } else {
+                    res.send({ status: "notLoggedIn" });
+                }
+            })
+
+            app.post('/api/music/get-lyrics', (req, res) => {
+                if (checkLoggedIn(req)) {
+                    oauth.getUser(req.session.access_token).then(user => {
+                        const queue = useQueue(process.env.GUILD_ID);
+                        if (queue == null) {
+                            res.send({ status: "queueNoExist" });
+                        } else {
                             if (checkUserInChannel(user.id, queue.channel)) {
                                 if (queue == null || queue.tracks.length === 0) {
                                     res.send({ "status": "queueEmpty" });
                                 } else {
-                                    if (queue == null || queue.tracks.length === 0) {
+                                    if (queue == null || queue.tracks.length === 0 || queue.currentTrack == null) {
                                         res.send({ "status": "noTrack" });
                                     } else {
-                                        res.send({ "status": "success", "channelName": queue.channel.name })
-                                        // console.log();
-                                        // if (queue.currentTrack != null) {
-                                        //     let track;
-                                        //     try {
-                                        //         track = queue.currentTrack.toJSON();
-                                        //         track.progress = queue.node.getTimestamp(false).current.value;
-                                        //         track.volume = queue.node.volume;
-                                        //         track.paused = queue.node.isPaused();
-                                        //     } catch {
-                                        //         res.send({ "status": "trackGetError" });
-                                        //         return
-                                        //     }
-                                        //     res.send({ status: "success", track: track });
-                                        // } else {
-                                        //     res.send({ "status": "noTrack" });
-                                        // }
+                                        (async () => {
+                                            try {
+                                                var searches = await geniusClient.songs.search(`${queue.currentTrack.author} ${queue.currentTrack.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\[.*?\]\s*/g, '') }`);
+                                                var song;
+                                                if (searches.length === 0) {
+                                                    searches = await geniusClient.songs.search(`${queue.currentTrack.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\[.*?\]\s*/g, '')}`);
+                                                    if (searches.length ===0) {
+                                                        return res.send({ status: "noResults" });
+                                                    } else {
+                                                        song = searches[0];
+                                                        res.send({ "status": "success", "lyrics": await song.lyrics() });
+                                                    }
+                                                } else {
+                                                    song = searches[0];
+                                                    res.send({ "status": "success", "lyrics": await song.lyrics() });
+                                                }
+                                            } catch (e) {
+                                                console.log(e);
+                                                res.send({ status: "unknownError" });
+                                            }
+                                        })();
                                     }
                                 }
                             } else {
