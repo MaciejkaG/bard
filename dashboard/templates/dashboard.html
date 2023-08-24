@@ -835,7 +835,7 @@
                 updateLyrics();
                 setInterval(updateCurrentChannel, 5000);
                 setInterval(updateCurrentTrack, 1000);
-                queueUpdateInterval = (updateQueue, 10000);
+                queueUpdateInterval = setInterval(updateQueue, 10000);
                 setInterval(updateLyrics, 10000);
                 $("#pause").click(function () {
                     $.post("/api/music/pause", function (data, status) {
