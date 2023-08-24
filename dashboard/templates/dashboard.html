@@ -840,7 +840,8 @@
                 $("#pause").click(function () {
                     $.post("/api/music/pause", function (data, status) {
                         if (status === "success" && data.status === "success") {
-
+                            clearInterval(queueUpdateInterval);
+                            updateQueue();
                         } else {
                             Toastify({
                                 text: `{{connectionError}}<br>${data.status}`,
@@ -858,7 +859,8 @@
                 $("#forwardSkip").click(function () {
                     $.post("/api/music/skip-song", function (data, status) {
                         if (status === "success" && data.status === "success") {
-
+                            clearInterval(queueUpdateInterval);
+                            updateQueue();
                         } else {
                             Toastify({
                                 text: `{{connectionError}}\n${data.status}`,
@@ -1022,7 +1024,7 @@
                     let queueHTML = "";
                     for (let i = 0; i < data.tracks.length; i++) {
                         const track = data.tracks[i];
-                        queueHTML += `<div class="position" id="${Math.random()}" url="${track.url}"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
+                        queueHTML += `<div class="position" id="${Math.random()}" data-url="${track.url}"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
                     }
 
                     $("#queue").html(queueHTML);
@@ -1061,7 +1063,6 @@
             let elem = document.getElementById(elem_id);
             let parent = elem.parentNode;
             const id = Array.prototype.indexOf.call(parent.children, elem);
-            console.log(id);
             $.ajax({
                 url: "/api/music/remove-from-queue", type: "POST", contentType: 'application/json', data: JSON.stringify({ 'target': id }), success: function (result, status) {
                     if (status !== "success" || result.status !== "success") {
