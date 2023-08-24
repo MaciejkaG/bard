@@ -1,1 +1,0 @@
-This is a database directory, files like main.db are saved here by default
