@@ -11,6 +11,6 @@ Custom languages can be added by duplicating the ``lang/en_GB.json`` file, setti
 
 **For more detailed help regarding custom dashboard themes or custom languages, please refer to [Bard's wiki](https://github.com/codebois-dev/bard/wiki).**
 ## To-Do
-- Finish the dashboard with some minor features (e.g. loop button, shuffle mode, autoplay mode).
+- Finish the dashboard with some minor features (e.g. loop button, shuffle mode, autoplay mode, back skip button).
 - Websocket implementation (to make web player elements smoother and not lag the server with multiple hour long tracks).
 - More Discord commands.
