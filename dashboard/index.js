@@ -15,17 +15,17 @@ const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database(path.join(__dirname, "../db/main.db"));
 const lang = new lib.localisation.language(process.env.LANGUAGE);
 
-db.run("CREATE TABLE IF NOT EXISTS user_config (user_id VARCHAR(255) NOT NULL, theme_id INT NULL)");
-
 module.exports = {
     main: async function(client) {
+        db.run("CREATE TABLE IF NOT EXISTS user_config (user_id VARCHAR(255) NOT NULL, theme_id INT NULL)");
+
         const app = express();
         const oauth = new DiscordOauth2({
             clientId: process.env.BOT_CLIENT_ID,
             clientSecret: process.env.CLIENT_SECRET,
             redirectUri: `${process.env.REDIRECT}/api/auth/redirect`,
         });
-        const geniusClient = new genius.Client();
+        const geniusClient = new genius.Client(process.env.GENIUS_ACCESS_TOKEN);
 
         app.use(express.static(path.join(__dirname, 'public')))
         app.use(express.json());
@@ -201,7 +201,11 @@ module.exports = {
                                             } catch (e) {
                                                 if (e.toString().includes("NoResultError")) {
                                                     res.send({ status: "noResults" });
+                                                } else if (e instanceof SyntaxError && e.toString().includes("Unexpected token '<")) {
+                                                    console.log("Seems like Genius asks for captcha. Please enter GENIUS_ACCESS_TOKEN .env variable to prevent that by using Genius's official API instead of scraping lyrics.\nFor more info please view ");
+                                                    res.send({ status: "serverException" });
                                                 } else {
+                                                    console.log(`Bard faced an error while fetching the lyrics for ${queue.currentTrack.title}:\n${e}`);
                                                     res.send({ status: "unknownError" });
                                                 }
                                             }
@@ -437,7 +441,7 @@ module.exports = {
                                             member.voice.channel.send(`${user.username} ${lang.getText("userAddedToQueue")} \`\`${track.title}\`\` ${lang.getText("usingDashboard")}`);
                                             res.send({ status: "success" })
                                         } catch (e) {
-                                            console.log(e)
+                                            console.log(`Bard faced an unknown error while a user was trying to add a track to queue:\n${e}`)
                                             res.send({ status: "unknownError" })
                                         }
                                     })();
@@ -489,7 +493,7 @@ module.exports = {
                 console.log(`[DASHBOARD] Dashboard server listening on ${process.env.PORT} (${process.env.REDIRECT}/)`);
             });
         } catch (e) {
-            console.log(e);
+            console.log(`Bard faced the following error while trying to configure the dashboard:\n${e}`)
         }
     }
 }
