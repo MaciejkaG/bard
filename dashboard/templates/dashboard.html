@@ -255,7 +255,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 102;
+            z-index: 200;
             transition: opacity 0.4s;
         }
 
@@ -298,7 +298,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 103;
+            z-index: 200;
             /* animation: startAnimation ease 2s 1; */
             border-radius: 10px;
             display: flex;
@@ -765,6 +765,9 @@
             </div>
             <div class="right">
                 <div class="volumeControls">
+                    <div class="loopControls">
+                        <span>Loop: <span id="loopMode">Queue</span></span>
+                    </div>
                     <div class="volumeIconContainer">
                         <img src="/img/volume.svg" alt="volume">
                     </div>

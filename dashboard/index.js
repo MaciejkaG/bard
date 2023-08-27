@@ -184,28 +184,33 @@ module.exports = {
                                     } else {
                                         (async () => {
                                             try {
-                                                var searches = await geniusClient.songs.search(`${queue.currentTrack.author} ${queue.currentTrack.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\[.*?\]\s*/g, '') }`);
-                                                var song;
-                                                if (searches.length === 0) {
-                                                    searches = await geniusClient.songs.search(`${queue.currentTrack.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\[.*?\]\s*/g, '')}`);
-                                                    if (searches.length ===0) {
-                                                        return res.send({ status: "noResults" });
+                                                var searches;
+                                                try {
+                                                    searches = await geniusClient.songs.search(`${queue.currentTrack.author} ${queue.currentTrack.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\[.*?\]\s*/g, '')}`);
+                                                } catch {} finally {
+                                                    var song;
+                                                    if (searches==null || searches.length === 0) {
+                                                        searches = await geniusClient.songs.search(`${queue.currentTrack.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\[.*?\]\s*/g, '')}`);
+                                                        if (searches==null || searches.length === 0) {
+                                                            return res.send({ status: "noResults" });
+                                                        } else {
+                                                            song = searches[0];
+                                                            res.send({ "status": "success", "lyrics": await song.lyrics() });
+                                                        }
                                                     } else {
                                                         song = searches[0];
                                                         res.send({ "status": "success", "lyrics": await song.lyrics() });
                                                     }
-                                                } else {
-                                                    song = searches[0];
-                                                    res.send({ "status": "success", "lyrics": await song.lyrics() });
                                                 }
+                                                
                                             } catch (e) {
-                                                if (e.toString().includes("NoResultError")) {
+                                                if (e.toString().includes("NoResultError") || e.toString().includes("No result was found")) {
                                                     res.send({ status: "noResults" });
                                                 } else if (e instanceof SyntaxError && e.toString().includes("Unexpected token '<")) {
                                                     console.log("Seems like Genius asks for captcha. Please enter GENIUS_ACCESS_TOKEN .env variable to prevent that by using Genius's official API instead of scraping lyrics.\nFor more info please view ");
                                                     res.send({ status: "serverException" });
                                                 } else {
-                                                    console.log(`Bard faced an error while fetching the lyrics for ${queue.currentTrack.title}:\n${e}`);
+                                                    console.log(`Bard faced an error while fetching the lyrics:\n${e}`);
                                                     res.send({ status: "unknownError" });
                                                 }
                                             }
