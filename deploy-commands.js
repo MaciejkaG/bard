@@ -1,6 +1,5 @@
 require('dotenv').config()
 const token = process.env.DISCORD_TOKEN;
-const guildId = process.env.GUILD_ID;
 const clientId = process.env.BOT_CLIENT_ID;
 const { REST, Routes } = require('discord.js');
 const fs = require('node:fs');
@@ -30,7 +29,7 @@ const rest = new REST().setToken(token);
         console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
         const data = await rest.put(
-            Routes.applicationGuildCommands(clientId, guildId),
+            Routes.applicationGuildCommands(clientId),
             { body: commands },
         );
 

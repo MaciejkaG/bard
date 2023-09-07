@@ -34,6 +34,7 @@
     "queue": "Kolejka",
     "themes": "Motywy",
     "lyrics": "Tekst",
+    "serverChanged": "Pomyślnie wybrano serwer!",
     "addedToQueue": "Pomyślnie dodano piosenkę do kolejki!",
     "removedFromQueue": "Pomyślnie usunięto piosenkę z kolejki!",
     "connectionError": "Błąd połączenia",

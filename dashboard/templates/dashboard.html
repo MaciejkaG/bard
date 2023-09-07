@@ -718,16 +718,199 @@
         .lyricsContainer .title span {
             transform: rotate(-90deg);
         }
+
+        .serverSelectorContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .serverSelectorContainer .serverSelectorWindow {
+            width: 80rem;
+            height: 35rem;
+            max-width: 90%;
+            background: black;
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            box-sizing: border-box;
+            overflow-y: scroll;
+            pointer-events: none;
+            transform: translateY(10%);
+            transition: transform 0.3s, opacity 0.2s;
+        }
+        .serverSelectorContainer .serverSelectorWindow::-webkit-scrollbar {
+            display: none;
+        }
+        .serverSelectorContainer .serverSelectorWindow h1 {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList {
+            display: flex;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            padding-bottom: 3rem;
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList .pos {
+            width: 10rem;
+            height: 12rem;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList .pos:hover {
+            transform: scale(1.04) translateY(-3%);
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList .pos img {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 100%;
+            filter: saturate(0%);
+            transition: all 0.2s;
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList .pos:hover img {
+            filter: saturate(100%);
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList .pos span {
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            width: 9rem;
+            text-overflow: ellipsis;
+            user-select: none;
+        }
     </style>
 </head>
 <body>
     <span class="designerTag">Designed by Maciejka</span>
     <div class="center">
+        
         <div class="search">
             <input type="text" spellcheck="false">
             <div class="suggestions"></div>
         </div>
         <div class="cover"><img src="/img/logo-nobg.png" alt="logo"></div>
+    </div>
+    <div class="serverSelectorContainer">
+        <div class="serverSelectorWindow">
+            <h1>Select a server</h1>
+            <div class="serverList">
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024" alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+                <div class="pos">
+                    <img src="https://cdn.discordapp.com/avatars/660959014691143691/d173d1875aed47c54b8a5924d0f7f0d1.png?size=1024"
+                        alt="server logo">
+                    <span>wojciech dziuda to sigma</span>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="lyricsContainer" onmouseover="setLyricsPos('shown');" onmouseout="setLyricsPos('hidden');">
         <div class="title">
@@ -822,50 +1005,38 @@
         window.onload = function() {
             const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
             const progressSlider = document.querySelector('[slider-id="progressSlider"]');
+            $.post("/api/music/get-servers", function (data, status) {
+                if (status === "success" && data.status === "success") {
+                    let serverList = "";
+                    for (let i = 0; i < data.servers.length; i++) {
+                        const elem = data.servers[i];
+                        console.log(elem);
+                        serverList += `<div class="pos" onclick="setSelectedServer('${elem.id}')"><img src="${elem.iconUrl}" alt="server logo"><span>${elem.name}</span></div>`;
+                    }
+                    $(".serverSelectorContainer .serverSelectorWindow .serverList").html(serverList);
 
-            volumeSlider.style.setProperty("--slider-fill-color", "{{altColor}}")
+                    var serverId = "";
 
-            $('.center .cover').css('animation', 'startAnimation ease 2s 1');
-            $('.center .cover').css('width', '0');
-            $('.center .cover').css('height', '0');
-            $('.center .cover').css('opacity', '0');
-            $('.center .cover img').css('opacity', '0');
+                    volumeSlider.style.setProperty("--slider-fill-color", "{{altColor}}")
 
-            setTimeout(() => {
-                updateCurrentChannel();
-                updateCurrentTrack();
-                updateQueue();
-                updateLyrics();
-                setInterval(updateCurrentChannel, 5000);
-                setInterval(updateCurrentTrack, 1000);
-                queueUpdateInterval = setInterval(updateQueue, 10000);
-                setInterval(updateLyrics, 10000);
-                $("#pause").click(function () {
-                    $.post("/api/music/pause", function (data, status) {
+                    $.post("/api/music/get-user-server", function (data, status) {
                         if (status === "success" && data.status === "success") {
-                            clearInterval(queueUpdateInterval);
-                            updateQueue();
-                            queueUpdateInterval = setInterval(updateQueue, 10000);
-                        } else {
-                            Toastify({
-                                text: `{{connectionError}}<br>${data.status}`,
-                                duration: 3000,
-                                newWindow: true,
-                                close: true,
-                                gravity: "bottom",
-                                position: "right",
-                                stopOnFocus: true,
-                                className: "error"
-                            }).showToast();
-                        }
-                    });
-                })
-                $("#forwardSkip").click(function () {
-                    $.post("/api/music/skip-song", function (data, status) {
-                        if (status === "success" && data.status === "success") {
-                            clearInterval(queueUpdateInterval);
-                            updateQueue();
-                            queueUpdateInterval = setInterval(updateQueue, 10000);
+                            $('.center .cover').css('animation', 'startAnimation ease 2s 1');
+                            $('.center .cover').css('width', '0');
+                            $('.center .cover').css('height', '0');
+                            $('.center .cover').css('opacity', '0');
+                            $('.center .cover img').css('opacity', '0');
+
+                            console.log(data.id);
+
+                            if (!data.id) {
+                                setTimeout(() => {
+                                    $('.serverSelectorContainer').css("opacity", "1");
+                                    $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "all", "transform": "translateY(0)" });
+                                }, 2000);
+                            } else {
+                                setSelectedServer(data.id);
+                            }
                         } else {
                             Toastify({
                                 text: `{{connectionError}}\n${data.status}`,
@@ -878,67 +1049,184 @@
                                 className: "error"
                             }).showToast();
                         }
-                    });
-                })
-                progressSlider.addChangeEvent(function () {
-                    $.ajax({
-                        url: "/api/music/seek", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: progressSlider.getSeconds() }), success: function (result, status) {
-                            if (status !== "success" || result.status !== "success") {
-                                Toastify({
-                                    text: `{{connectionError}}\n${result.status}`,
-                                    duration: 3000,
-                                    newWindow: true,
-                                    close: true,
-                                    gravity: "bottom",
-                                    position: "right",
-                                    stopOnFocus: true,
-                                    className: "error"
-                                }).showToast();
-                            }
-                        }, error: function () {
-                            Toastify({
-                                text: "{{connectionError}}",
-                                duration: 3000,
-                                newWindow: true,
-                                close: true,
-                                gravity: "bottom",
-                                position: "right",
-                                stopOnFocus: true,
-                                className: "error"
-                            }).showToast();
+                    })
+                } else {
+                    Toastify({
+                        text: `{{connectionError}}\n${data.status}`,
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        className: "error"
+                    }).showToast();
+                }
+            });
+        }
+
+        var firstServerChange = true;
+
+        function setSelectedServer(id) {
+            $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "none", "opacity": "0.3" });
+            $.ajax({
+                url: "/api/music/set-user-server", type: "POST", contentType: 'application/json', data: JSON.stringify({ 'target': id }), success: function (result, status) {
+                    if (status !== "success" || result.status !== "success") {
+                        Toastify({
+                            text: `{{connectionError}}\n${result.status}`,
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "bottom",
+                            position: "right",
+                            stopOnFocus: true,
+                            className: "error"
+                        }).showToast();
+
+                        $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "all", "opacity": "1" });
+                    } else {
+                        $('.serverSelectorContainer').css({ "opacity": "0", "pointer-events": "none" })
+                        $('.serverSelectorContainer .serverSelectorWindow').css({ "transform": "translateY(10%)", "pointer-events": "none" })
+
+                        Toastify({
+                            text: `{{serverChanged}}`,
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "bottom",
+                            position: "right",
+                            stopOnFocus: true,
+                            className: "success"
+                        }).showToast();
+
+                        updateCurrentChannel();
+                        updateCurrentTrack();
+                        updateQueue();
+                        updateLyrics();
+
+                        if (firstServerChange) {
+                            firstServerChange = false;
+
+                            setInterval(updateCurrentChannel, 5000);
+                            setInterval(updateCurrentTrack, 1000);
+                            queueUpdateInterval = setInterval(updateQueue, 10000);
+                            setInterval(updateLyrics, 10000);
+
+                            $("#pause").click(function () {
+                                $.post("/api/music/pause", function (data, status) {
+                                    if (status === "success" && data.status === "success") {
+                                        clearInterval(queueUpdateInterval);
+                                        updateQueue();
+                                        queueUpdateInterval = setInterval(updateQueue, 10000);
+                                    } else {
+                                        Toastify({
+                                            text: `{{connectionError}}<br>${data.status}`,
+                                            duration: 3000,
+                                            newWindow: true,
+                                            close: true,
+                                            gravity: "bottom",
+                                            position: "right",
+                                            stopOnFocus: true,
+                                            className: "error"
+                                        }).showToast();
+                                    }
+                                });
+                            })
+                            $("#forwardSkip").click(function () {
+                                $.post("/api/music/skip-song", function (data, status) {
+                                    if (status === "success" && data.status === "success") {
+                                        clearInterval(queueUpdateInterval);
+                                        updateQueue();
+                                        queueUpdateInterval = setInterval(updateQueue, 10000);
+                                    } else {
+                                        Toastify({
+                                            text: `{{connectionError}}\n${data.status}`,
+                                            duration: 3000,
+                                            newWindow: true,
+                                            close: true,
+                                            gravity: "bottom",
+                                            position: "right",
+                                            stopOnFocus: true,
+                                            className: "error"
+                                        }).showToast();
+                                    }
+                                });
+                            })
+                            progressSlider.addChangeEvent(function () {
+                                $.ajax({
+                                    url: "/api/music/seek", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: progressSlider.getSeconds() }), success: function (result, status) {
+                                        if (status !== "success" || result.status !== "success") {
+                                            Toastify({
+                                                text: `{{connectionError}}\n${result.status}`,
+                                                duration: 3000,
+                                                newWindow: true,
+                                                close: true,
+                                                gravity: "bottom",
+                                                position: "right",
+                                                stopOnFocus: true,
+                                                className: "error"
+                                            }).showToast();
+                                        }
+                                    }, error: function () {
+                                        Toastify({
+                                            text: "{{connectionError}}",
+                                            duration: 3000,
+                                            newWindow: true,
+                                            close: true,
+                                            gravity: "bottom",
+                                            position: "right",
+                                            stopOnFocus: true,
+                                            className: "error"
+                                        }).showToast();
+                                    }
+                                });
+                            })
+                            volumeSlider.addChangeEvent(function () {
+                                $.ajax({
+                                    url: "/api/music/set-volume", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: parseInt(this.value) }), success: function (result, status) {
+                                        if (status !== "success" || result.status !== "success") {
+                                            Toastify({
+                                                text: `{{connectionError}}\n${result.status}`,
+                                                duration: 3000,
+                                                newWindow: true,
+                                                close: true,
+                                                gravity: "bottom",
+                                                position: "right",
+                                                stopOnFocus: true,
+                                                className: "error"
+                                            }).showToast();
+                                        }
+                                    }, error: function () {
+                                        Toastify({
+                                            text: "{{connectionError}}",
+                                            duration: 3000,
+                                            newWindow: true,
+                                            close: true,
+                                            gravity: "bottom",
+                                            position: "right",
+                                            stopOnFocus: true,
+                                            className: "error"
+                                        }).showToast();
+                                    }
+                                });
+                            });
                         }
-                    });
-                })
-                volumeSlider.addChangeEvent(function () {
-                    $.ajax({
-                        url: "/api/music/set-volume", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: parseInt(this.value) }), success: function (result, status) {
-                            if (status !== "success" || result.status !== "success") {
-                                Toastify({
-                                    text: `{{connectionError}}\n${result.status}`,
-                                    duration: 3000,
-                                    newWindow: true,
-                                    close: true,
-                                    gravity: "bottom",
-                                    position: "right",
-                                    stopOnFocus: true,
-                                    className: "error"
-                                }).showToast();
-                            }
-                        }, error: function () {
-                            Toastify({
-                                text: "{{connectionError}}",
-                                duration: 3000,
-                                newWindow: true,
-                                close: true,
-                                gravity: "bottom",
-                                position: "right",
-                                stopOnFocus: true,
-                                className: "error"
-                            }).showToast();
-                        }
-                    });
-                });
-            }, 1000);
+                    }
+                }, error: function () {
+                    Toastify({
+                        text: "{{connectionError}}",
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        className: "error"
+                    }).showToast();
+
+                    $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "all", "opacity": "1" });
+                }
+            });
         }
 
         function updateCurrentChannel() {

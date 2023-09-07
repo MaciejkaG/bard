@@ -34,6 +34,7 @@
     "queue": "Queue",
     "themes": "Themes",
     "lyrics": "Lyrics",
+    "serverChanged": "Successfully selected a server!",
     "addedToQueue": "Successfully added a song to queue!",
     "removedFromQueue": "Successfully removed a song from queue!",
     "connectionError": "Connection error",
