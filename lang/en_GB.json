@@ -23,6 +23,7 @@
     "rootSubtitle": "Bard is an advanced open-source Discord music bot.",
     "login": "Proceed to dashboard login",
     "noLogin": "Proceed to dashboard",
+    "selectServer": "Select a server",
 
     "queueFetchFailed": "Queue fetch failed",
     "trackFetchFailed": "Current track fetch failed",
