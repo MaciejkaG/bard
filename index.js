@@ -79,7 +79,7 @@ client.on(Events.InteractionCreate, async interaction => {
     const command = interaction.client.commands.get(interaction.commandName);
 
     if (!command) {
-        console.log(`${'[BOT]'.magenta} ${'[WARNING]'.yellow} No command matching ${interaction.commandName} was found.`);
+        console.log(`${'[COMMANDS]'.magenta} ${'[WARNING]'.yellow} No command matching ${interaction.commandName} was found.`);
         return;
     }
 
@@ -97,6 +97,9 @@ client.on(Events.InteractionCreate, async interaction => {
 
 client.once(Events.ClientReady, c => {
     console.log(`${'[BOT]'.blue} Logged in as ${c.user.tag}`);
+    if (client.guilds.cache.size>10) {
+        console.log(`${'[BOT]'.blue} ${'[WARNING]'.yellow} This instance of Bard is in more than 10 servers. Remember that we (as Codebois) take no responsibility for consequences of publicly hosting Bard.`)
+    }
 });
 
 client.login(token);
