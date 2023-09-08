@@ -18,6 +18,8 @@
     "removeFromQueue": "Usuń z kolejki",
     "openSource": "Otwórz źródło",
     "selectServer": "Wybierz serwer",
+    "changeServer": "Zmień serwer",
+    "logOut": "Wyloguj się",
 
     "usingDashboard": "poprzez internetowy dashboard Barda",
 

@@ -17,13 +17,15 @@
     "addToQueue": "Add to queue",
     "removeFromQueue": "Remove from queue",
     "openSource": "Open source",
+    "selectServer": "Select a server",
+    "changeServer": "Change server",
+    "logOut": "Log out",
 
     "usingDashboard": "using Bard's web dashboard",
     
     "rootSubtitle": "Bard is an advanced open-source Discord music bot.",
     "login": "Proceed to dashboard login",
     "noLogin": "Proceed to dashboard",
-    "selectServer": "Select a server",
 
     "queueFetchFailed": "Queue fetch failed",
     "trackFetchFailed": "Current track fetch failed",
