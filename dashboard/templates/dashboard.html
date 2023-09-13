@@ -300,12 +300,11 @@
             transform: translate(-50%, -50%);
             z-index: 200;
             /* animation: startAnimation ease 2s 1; */
-            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             user-select: none;
-            /* transition: opacity 0s; */
+            transition: border-radius 150ms;
         }
 
         @keyframes startAnimation {
@@ -718,16 +717,141 @@
         .lyricsContainer .title span {
             transform: rotate(-90deg);
         }
+
+        .serverSelectorContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .serverSelectorContainer .serverSelectorWindow {
+            width: 80rem;
+            height: 35rem;
+            max-width: 90%;
+            background: black;
+            border-radius: 10px;
+            padding: 1rem 2rem;
+            box-sizing: border-box;
+            overflow-y: scroll;
+            pointer-events: none;
+            transform: translateY(10%);
+            transition: transform 0.3s, opacity 0.2s;
+        }
+        .serverSelectorContainer .serverSelectorWindow::-webkit-scrollbar {
+            display: none;
+        }
+        .serverSelectorContainer .serverSelectorWindow h1 {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList {
+            display: flex;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            padding-bottom: 3rem;
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList .pos {
+            width: 10rem;
+            height: 12rem;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList .pos:hover {
+            transform: scale(1.04) translateY(-3%);
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList .pos img {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 100%;
+            filter: saturate(0%);
+            transition: all 0.2s;
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList .pos:hover img {
+            filter: saturate(100%);
+        }
+        .serverSelectorContainer .serverSelectorWindow .serverList .pos span {
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            width: 9rem;
+            text-overflow: ellipsis;
+            user-select: none;
+        }
+
+        .settings {
+            position: fixed;
+            bottom: 3rem;
+            left: calc(-9em - 20px);
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            padding: 0.75rem;
+            background: black;
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            transition: left 0.3s;
+        }
+        .settings:hover {
+            left: 0;
+        }
+        .settings .left {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 5rem;
+            width: 9em;
+        }
+        .settings .right {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .settings .right img {
+            width: 100%;
+            aspect-ratio: 1;
+        }
+        .settings span {
+            padding-bottom: 3px;
+            border-bottom: solid 1px white;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .lightRed {
+            color: rgb(217, 59, 59);
+        }
+
+        .settings span.lightRed {
+            border-bottom-color: rgb(217, 59, 59);
+        }
     </style>
 </head>
 <body>
     <span class="designerTag">Designed by Maciejka</span>
     <div class="center">
+        
         <div class="search">
             <input type="text" spellcheck="false">
             <div class="suggestions"></div>
         </div>
         <div class="cover"><img src="/img/logo-nobg.png" alt="logo"></div>
+    </div>
+    <div class="serverSelectorContainer">
+        <div class="serverSelectorWindow">
+            <h1>{{selectServer}}</h1>
+            <div class="serverList"></div>
+        </div>
     </div>
     <div class="lyricsContainer" onmouseover="setLyricsPos('shown');" onmouseout="setLyricsPos('hidden');">
         <div class="title">
@@ -781,12 +905,21 @@
     <div class="queueBlock" id="queue">
         
     </div>
+    <div class="settings">
+        <div class="left">
+            <span onclick="openServerChangeWindow()">{{changeServer}}</span>
+            <span class="lightRed" onclick="logOut()">{{logOut}}</span>
+        </div>
+        <div class="right">
+            <img src="/img/settings.svg" alt="settings">
+        </div>
+    </div>
     <div class="channelIndicatorContainer">
-        <div class="channelIndicator" title="tajny kanał ukryty przed maszdosą by nie mógł nas prześladować 1"><svg xmlns="http://www.w3.org/2000/svg" fill="#ffffff" width="24" height="24" viewBox="0 0 24 24">
+        <div class="channelIndicator" title=""><svg xmlns="http://www.w3.org/2000/svg" fill="#ffffff" width="24" height="24" viewBox="0 0 24 24">
             <rect class="eq-bar eq-bar--1" x="4" y="4" width="3.7" height="8" />
             <rect class="eq-bar eq-bar--2" x="10.2" y="4" width="3.7" height="16" />
             <rect class="eq-bar eq-bar--3" x="16.3" y="4" width="3.7" height="11" />
-        </svg> <span>tajny kanał ukryty przed maszdosą by nie mógł nas prześladować 1</span></div>
+        </svg> <span></span></div>
     </div>
     <div class="themes">
         <span class="title">{{themes}}</span>
@@ -822,50 +955,36 @@
         window.onload = function() {
             const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
             const progressSlider = document.querySelector('[slider-id="progressSlider"]');
+            $.post("/api/music/get-servers", function (data, status) {
+                if (status === "success" && data.status === "success") {
+                    let serverList = "";
+                    for (let i = 0; i < data.servers.length; i++) {
+                        const elem = data.servers[i];
+                        serverList += `<div class="pos" onclick="setSelectedServer('${elem.id}')"><img src="${elem.iconUrl}" alt="server logo"><span>${elem.name}</span></div>`;
+                    }
+                    $(".serverSelectorContainer .serverSelectorWindow .serverList").html(serverList);
 
-            volumeSlider.style.setProperty("--slider-fill-color", "{{altColor}}")
+                    var serverId = "";
 
-            $('.center .cover').css('animation', 'startAnimation ease 2s 1');
-            $('.center .cover').css('width', '0');
-            $('.center .cover').css('height', '0');
-            $('.center .cover').css('opacity', '0');
-            $('.center .cover img').css('opacity', '0');
+                    volumeSlider.style.setProperty("--slider-fill-color", "{{altColor}}")
 
-            setTimeout(() => {
-                updateCurrentChannel();
-                updateCurrentTrack();
-                updateQueue();
-                updateLyrics();
-                setInterval(updateCurrentChannel, 5000);
-                setInterval(updateCurrentTrack, 1000);
-                queueUpdateInterval = setInterval(updateQueue, 10000);
-                setInterval(updateLyrics, 10000);
-                $("#pause").click(function () {
-                    $.post("/api/music/pause", function (data, status) {
+                    $.post("/api/music/get-user-server", function (data, status) {
                         if (status === "success" && data.status === "success") {
-                            clearInterval(queueUpdateInterval);
-                            updateQueue();
-                            queueUpdateInterval = setInterval(updateQueue, 10000);
-                        } else {
-                            Toastify({
-                                text: `{{connectionError}}<br>${data.status}`,
-                                duration: 3000,
-                                newWindow: true,
-                                close: true,
-                                gravity: "bottom",
-                                position: "right",
-                                stopOnFocus: true,
-                                className: "error"
-                            }).showToast();
-                        }
-                    });
-                })
-                $("#forwardSkip").click(function () {
-                    $.post("/api/music/skip-song", function (data, status) {
-                        if (status === "success" && data.status === "success") {
-                            clearInterval(queueUpdateInterval);
-                            updateQueue();
-                            queueUpdateInterval = setInterval(updateQueue, 10000);
+                            $('.center .cover').css('animation', 'startAnimation ease 2s 1');
+                            $('.center .cover').css('width', '0');
+                            $('.center .cover').css('height', '0');
+                            $('.center .cover').css('opacity', '0');
+                            $('.center .cover').css('border-radius', '10px');
+                            $('.center .cover img').css('opacity', '0');
+
+                            if (!data.id) {
+                                setTimeout(() => {
+                                    $('.serverSelectorContainer').css("opacity", "1");
+                                    $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "all", "transform": "translateY(0)" });
+                                }, 2000);
+                            } else {
+                                setSelectedServer(data.id);
+                            }
                         } else {
                             Toastify({
                                 text: `{{connectionError}}\n${data.status}`,
@@ -878,67 +997,219 @@
                                 className: "error"
                             }).showToast();
                         }
-                    });
-                })
-                progressSlider.addChangeEvent(function () {
-                    $.ajax({
-                        url: "/api/music/seek", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: progressSlider.getSeconds() }), success: function (result, status) {
-                            if (status !== "success" || result.status !== "success") {
-                                Toastify({
-                                    text: `{{connectionError}}\n${result.status}`,
-                                    duration: 3000,
-                                    newWindow: true,
-                                    close: true,
-                                    gravity: "bottom",
-                                    position: "right",
-                                    stopOnFocus: true,
-                                    className: "error"
-                                }).showToast();
-                            }
-                        }, error: function () {
-                            Toastify({
-                                text: "{{connectionError}}",
-                                duration: 3000,
-                                newWindow: true,
-                                close: true,
-                                gravity: "bottom",
-                                position: "right",
-                                stopOnFocus: true,
-                                className: "error"
-                            }).showToast();
+                    })
+                } else {
+                    Toastify({
+                        text: `{{connectionError}}\n${data.status}`,
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        className: "error"
+                    }).showToast();
+                }
+            });
+        }
+
+        function logOut() {
+            $('.center .cover').css('transition', 'opacity 0.5s');
+            $('.center .cover').css('width', '100vw');
+            $('.center .cover').css('height', '100vh');
+            $('.center .cover').css('opacity', '1');
+            $('.center .cover img').css('animation', 'none');
+            $('.center .cover img').css('transition', 'none');
+            $('.center .cover img').css('opacity', '1');
+            $('.center .cover img').css('animation', 'loading 1s infinite ease');
+            $.post("/api/music/log-out", function (data, status) {
+                if (status === "success" && data.status === "success") {
+                    setTimeout(() => {
+                        window.location.replace("/");
+                    }, 2000);
+                } else {
+                    Toastify({
+                        text: `{{connectionError}}\n${data.status}`,
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        className: "error"
+                    }).showToast();
+                }
+            })
+        }
+
+        function openServerChangeWindow() {
+            $('.serverSelectorContainer .serverSelectorWindow').css("opacity", 1);
+            $('.serverSelectorContainer').css({"opacity": "1", "pointer-events": "all"});
+            $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "all", "transform": "translateY(0)" });
+        }
+
+        var firstServerChange = true;
+
+        function setSelectedServer(id) {
+            $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "none", "opacity": "0.3" });
+            $.ajax({
+                url: "/api/music/set-user-server", type: "POST", contentType: 'application/json', data: JSON.stringify({ 'target': id }), success: function (result, status) {
+                    if (status !== "success" || result.status !== "success") {
+                        Toastify({
+                            text: `{{connectionError}}\n${result.status}`,
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "bottom",
+                            position: "right",
+                            stopOnFocus: true,
+                            className: "error"
+                        }).showToast();
+
+                        $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "all", "opacity": "1" });
+                    } else {
+                        $('.serverSelectorContainer').css({ "opacity": "0", "pointer-events": "none" })
+                        $('.serverSelectorContainer .serverSelectorWindow').css({ "transform": "translateY(10%)", "pointer-events": "none" })
+
+                        Toastify({
+                            text: `{{serverChanged}}`,
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "bottom",
+                            position: "right",
+                            stopOnFocus: true,
+                            className: "success"
+                        }).showToast();
+
+                        updateCurrentChannel();
+                        updateCurrentTrack();
+                        updateQueue();
+                        updateLyrics();
+
+                        if (firstServerChange) {
+                            firstServerChange = false;
+
+                            setInterval(updateCurrentChannel, 5000);
+                            setInterval(updateCurrentTrack, 1000);
+                            queueUpdateInterval = setInterval(updateQueue, 10000);
+                            setInterval(updateLyrics, 10000);
+
+                            $("#pause").click(function () {
+                                $.post("/api/music/pause", function (data, status) {
+                                    if (status === "success" && data.status === "success") {
+                                        clearInterval(queueUpdateInterval);
+                                        updateQueue();
+                                        queueUpdateInterval = setInterval(updateQueue, 10000);
+                                    } else {
+                                        Toastify({
+                                            text: `{{connectionError}}<br>${data.status}`,
+                                            duration: 3000,
+                                            newWindow: true,
+                                            close: true,
+                                            gravity: "bottom",
+                                            position: "right",
+                                            stopOnFocus: true,
+                                            className: "error"
+                                        }).showToast();
+                                    }
+                                });
+                            })
+                            $("#forwardSkip").click(function () {
+                                $.post("/api/music/skip-song", function (data, status) {
+                                    if (status === "success" && data.status === "success") {
+                                        clearInterval(queueUpdateInterval);
+                                        updateQueue();
+                                        queueUpdateInterval = setInterval(updateQueue, 10000);
+                                    } else {
+                                        Toastify({
+                                            text: `{{connectionError}}\n${data.status}`,
+                                            duration: 3000,
+                                            newWindow: true,
+                                            close: true,
+                                            gravity: "bottom",
+                                            position: "right",
+                                            stopOnFocus: true,
+                                            className: "error"
+                                        }).showToast();
+                                    }
+                                });
+                            })
+                            progressSlider.addChangeEvent(function () {
+                                $.ajax({
+                                    url: "/api/music/seek", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: progressSlider.getSeconds() }), success: function (result, status) {
+                                        if (status !== "success" || result.status !== "success") {
+                                            Toastify({
+                                                text: `{{connectionError}}\n${result.status}`,
+                                                duration: 3000,
+                                                newWindow: true,
+                                                close: true,
+                                                gravity: "bottom",
+                                                position: "right",
+                                                stopOnFocus: true,
+                                                className: "error"
+                                            }).showToast();
+                                        }
+                                    }, error: function () {
+                                        Toastify({
+                                            text: "{{connectionError}}",
+                                            duration: 3000,
+                                            newWindow: true,
+                                            close: true,
+                                            gravity: "bottom",
+                                            position: "right",
+                                            stopOnFocus: true,
+                                            className: "error"
+                                        }).showToast();
+                                    }
+                                });
+                            })
+                            volumeSlider.addChangeEvent(function () {
+                                $.ajax({
+                                    url: "/api/music/set-volume", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: parseInt(this.value) }), success: function (result, status) {
+                                        if (status !== "success" || result.status !== "success") {
+                                            Toastify({
+                                                text: `{{connectionError}}\n${result.status}`,
+                                                duration: 3000,
+                                                newWindow: true,
+                                                close: true,
+                                                gravity: "bottom",
+                                                position: "right",
+                                                stopOnFocus: true,
+                                                className: "error"
+                                            }).showToast();
+                                        }
+                                    }, error: function () {
+                                        Toastify({
+                                            text: "{{connectionError}}",
+                                            duration: 3000,
+                                            newWindow: true,
+                                            close: true,
+                                            gravity: "bottom",
+                                            position: "right",
+                                            stopOnFocus: true,
+                                            className: "error"
+                                        }).showToast();
+                                    }
+                                });
+                            });
                         }
-                    });
-                })
-                volumeSlider.addChangeEvent(function () {
-                    $.ajax({
-                        url: "/api/music/set-volume", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: parseInt(this.value) }), success: function (result, status) {
-                            if (status !== "success" || result.status !== "success") {
-                                Toastify({
-                                    text: `{{connectionError}}\n${result.status}`,
-                                    duration: 3000,
-                                    newWindow: true,
-                                    close: true,
-                                    gravity: "bottom",
-                                    position: "right",
-                                    stopOnFocus: true,
-                                    className: "error"
-                                }).showToast();
-                            }
-                        }, error: function () {
-                            Toastify({
-                                text: "{{connectionError}}",
-                                duration: 3000,
-                                newWindow: true,
-                                close: true,
-                                gravity: "bottom",
-                                position: "right",
-                                stopOnFocus: true,
-                                className: "error"
-                            }).showToast();
-                        }
-                    });
-                });
-            }, 1000);
+                    }
+                }, error: function () {
+                    Toastify({
+                        text: "{{connectionError}}",
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "bottom",
+                        position: "right",
+                        stopOnFocus: true,
+                        className: "error"
+                    }).showToast();
+
+                    $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "all", "opacity": "1" });
+                }
+            });
         }
 
         function updateCurrentChannel() {
@@ -1239,6 +1510,7 @@
             $('.center .cover').css('width', '100vw');
             $('.center .cover').css('height', '100vh');
             $('.center .cover').css('opacity', '1');
+            $('.center .cover').css('border-radius', '0');
             $('.center .cover img').css('animation', 'none');
             $('.center .cover img').css('transition', 'none');
             $('.center .cover img').css('opacity', '1');

@@ -17,6 +17,9 @@
     "addToQueue": "Dodaj do kolejki",
     "removeFromQueue": "Usuń z kolejki",
     "openSource": "Otwórz źródło",
+    "selectServer": "Wybierz serwer",
+    "changeServer": "Zmień serwer",
+    "logOut": "Wyloguj się",
 
     "usingDashboard": "poprzez internetowy dashboard Barda",
 
@@ -34,6 +37,7 @@
     "queue": "Kolejka",
     "themes": "Motywy",
     "lyrics": "Tekst",
+    "serverChanged": "Pomyślnie wybrano serwer!",
     "addedToQueue": "Pomyślnie dodano piosenkę do kolejki!",
     "removedFromQueue": "Pomyślnie usunięto piosenkę z kolejki!",
     "connectionError": "Błąd połączenia",
