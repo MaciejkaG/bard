@@ -132,3 +132,4 @@ dist
 
 # SQLite database
 db/*.db
+db/main.db

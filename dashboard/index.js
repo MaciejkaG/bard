@@ -490,7 +490,7 @@ module.exports = {
                                 const guild = client.guilds.cache.find(guild => guild.id === req.session.guild_id);
                                 const member = guild.members.cache.find(searchedUser => searchedUser.id === user.id);
 
-                                if (member.voice.channel) {
+                                if (member && member.voice.channel) {
                                     (async () => {
                                         try {
                                             const { track } = await player.play(member.voice.channel, req.body.query, {
