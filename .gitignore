@@ -131,4 +131,4 @@ dist
 .pnp.*
 
 # SQLite database
-.db/*.db
+db/*.db
