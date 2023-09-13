@@ -9,6 +9,5 @@ For help with installation, check out [Bard's Getting Started guide](https://git
 
 **For more detailed help regarding custom dashboard themes or custom languages, please refer to [Bard's wiki](https://github.com/codebois-dev/bard/wiki).**
 ## To-Do
-- Finish the dashboard with some minor features (e.g. loop button, shuffle mode, autoplay mode, back skip button).
-- Websocket implementation (to make web player elements smoother and not lag the server with multiple hour long tracks).
+- Finish the dashboard with some minor features (e.g. loop button, back skip button).
 - More Discord commands.
