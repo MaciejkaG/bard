@@ -1044,7 +1044,7 @@
 
         function openServerChangeWindow() {
             $('.serverSelectorContainer .serverSelectorWindow').css("opacity", 1);
-            $('.serverSelectorContainer').css("opacity", "1");
+            $('.serverSelectorContainer').css({"opacity": "1", "pointer-events": "all"});
             $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "all", "transform": "translateY(0)" });
         }
 
