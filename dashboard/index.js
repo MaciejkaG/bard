@@ -1,9 +1,8 @@
-require('dotenv').config()
+require('dotenv').config();
 const express = require("express");
 const { v4: uuidv4 } = require('uuid');
 const session = require('express-session');
 const fetch = require("node-fetch");
-const DiscordOauth2 = require("discord-oauth2");
 const handlebars = require("handlebars");
 const path = require('node:path');
 const lib = require("../utils");
@@ -21,14 +20,10 @@ module.exports = {
         db.run("CREATE TABLE IF NOT EXISTS user_config (user_id VARCHAR(255) NOT NULL, theme_id INT NULL)");
 
         const app = express();
-        const oauth = new DiscordOauth2({
-            clientId: process.env.BOT_CLIENT_ID,
-            clientSecret: process.env.CLIENT_SECRET,
-            redirectUri: `${process.env.REDIRECT}/api/auth/redirect`,
-        });
+        const oauth = new lib.oauth2.Client(process.env.BOT_CLIENT_ID, process.env.CLIENT_SECRET, `${process.env.REDIRECT}/api/auth/redirect`);
         const geniusClient = new genius.Client(process.env.GENIUS_ACCESS_TOKEN);
 
-        app.use(express.static(path.join(__dirname, 'public')))
+        app.use(express.static(path.join(__dirname, 'public')));
         app.use(express.json());
         app.use(express.urlencoded({ extended: true }));
         app.set('views', path.join(__dirname, 'templates'));
@@ -40,11 +35,11 @@ module.exports = {
             resave: false,
             saveUninitialized: true,
             cookie: { secure: false }
-        }))
+        }));
 
         try {
-            app.get('/api/sse/track-data', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.get('/api/sse/track-data', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         res.setHeader('Cache-Control', 'no-cache');
                         res.setHeader('Content-Type', 'text/event-stream');
@@ -98,8 +93,8 @@ module.exports = {
                 }
             });
 
-            app.get("/api/sse/queue-data", (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.get("/api/sse/queue-data", async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         res.setHeader('Cache-Control', 'no-cache');
                         res.setHeader('Content-Type', 'text/event-stream');
@@ -133,59 +128,42 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.get('/', (req, res) => {
+            app.get('/', async (req, res) => {
                 let template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/root.html'), 'utf8'));
-                if (checkLoggedIn(req)) {
-                    res.send(template({ subtitle: lang.getText("rootSubtitle"), login: lang.getText("noLogin") }))
+                if (await checkLoggedIn(req)) {
+                    res.send(template({ subtitle: lang.getText("rootSubtitle"), login: lang.getText("noLogin") }));
                 } else {
-                    res.send(template({ subtitle: lang.getText("rootSubtitle"), login: lang.getText("login") }))
+                    res.send(template({ subtitle: lang.getText("rootSubtitle"), login: lang.getText("login") }));
                 }
                 
-            })
+            });
 
-            app.get('/login', (req, res) => {
-                if (checkLoggedIn(req)) {
+            app.get('/login', async (req, res) => {
+                if (await checkLoggedIn(req)) {
                     res.redirect("/dashboard")
                 } else {
                     res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${encodeURI(process.env.BOT_CLIENT_ID)}&redirect_uri=${encodeURI(process.env.REDIRECT)}%2Fapi%2Fauth%2Fredirect&response_type=code&scope=identify%20guilds`)
                 }
-            })
+            });
 
-            app.get('/api/auth/redirect', (req, res) => {
+            app.get('/api/auth/redirect', async (req, res) => {
                 if (req.query.code != undefined) {
-                    var data = new URLSearchParams({
-                        client_id: process.env.BOT_CLIENT_ID,
-                        client_secret: process.env.CLIENT_SECRET,
-                        grant_type: 'authorization_code',
-                        code: req.query.code,
-                        redirect_uri: `${process.env.REDIRECT}/api/auth/redirect`
-                    }).toString();
-
-                    fetch('https://discord.com/api/oauth2/token', {
-                        method: 'post',
-                        body: data,
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                    })
-                        .then(response => response.json())
+                    oauth.getAccessToken(req.query.code)
                         .then(jsonRes => {
-                            if (jsonRes.error === undefined) {
-                                req.session.token_expiration = new Date().getTime() / 1000 + jsonRes.expires_in;
-                                req.session.access_token = jsonRes.access_token;
-                                req.session.refresh_token = jsonRes.refresh_token;
-                                req.session.guild_id = null;
-                                res.redirect("/dashboard");
-                            } else {
-                                res.send(constructMessagePage(lang.getText("authorisationError"), 2));
-                            }
+                            req.session.token_expiration = new Date().getTime() / 1000 + jsonRes.expires_in;
+                            req.session.access_token = jsonRes.access_token;
+                            req.session.refresh_token = jsonRes.refresh_token;
+                            req.session.guild_id = null;
+                            res.redirect("/dashboard");
                         })
-                        .catch(error => res.send(constructMessagePage(lang.getText("authorisationError"), 2)));
+                        .catch(err => res.send(constructMessagePage(lang.getText("authorisationError"), 2)));
                 }
-            })
+            });
 
-            app.get('/dashboard', (req, res) => {
-                if (checkLoggedIn(req)) {
+            app.get('/dashboard', async (req, res) => {
+                if (await checkLoggedIn(req)) {
                     oauth.getUserGuilds(req.session.access_token).then(guilds => {
                         req.session.isInGuild = true;
                         oauth.getUser(req.session.access_token).then(user => {
@@ -211,10 +189,10 @@ module.exports = {
                 } else {
                     res.redirect(`/login`)
                 }
-            })
+            });
             
-            app.post('/api/misc/change-theme', (req, res) => {
-                if (checkLoggedIn(req)) {
+            app.post('/api/misc/change-theme', async (req, res) => {
+                if (await checkLoggedIn(req)) {
                     if (req.session.isInGuild) {
                         oauth.getUser(req.session.access_token).then(user => {
                             const themes = lib.themes.themeList();
@@ -232,10 +210,10 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/get-current-channel', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/get-current-channel', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         const queue = useQueue(req.session.guild_id);
                         if (queue == null) {
@@ -255,10 +233,10 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/get-lyrics', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/get-lyrics', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         const queue = useQueue(req.session.guild_id);
                         if (queue == null) {
@@ -314,20 +292,20 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/get-queue', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/get-queue', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         
                     })
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/pause', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/pause', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         const queue = useQueue(req.session.guild_id);
                         if (queue==null) {
@@ -344,10 +322,10 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/skip-song', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/skip-song', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         const queue = useQueue(req.session.guild_id);
                         if (queue == null) {
@@ -365,10 +343,10 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/seek', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/seek', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         const queue = useQueue(req.session.guild_id);
                         if (queue == null) {
@@ -393,10 +371,10 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/get-servers', (req, res) => {
-                if (checkLoggedIn(req)) {
+            app.post('/api/music/get-servers', async (req, res) => {
+                if (await checkLoggedIn(req)) {
                     oauth.getUser(req.session.access_token).then(user => {
                         oauth.getUserGuilds(req.session.access_token).then(guilds => {
                             const mutual = getMutualServers(guilds, client.guilds.cache)
@@ -413,20 +391,20 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/log-out', (req, res) => {
-                if (checkLoggedIn(req)) {
+            app.post('/api/music/log-out', async (req, res) => {
+                if (await checkLoggedIn(req)) {
                     req.session.destroy((err) => {
                         res.send({ status: "success" })
                     })
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/set-user-server', (req, res) => {
-                if (checkLoggedIn(req)) {
+            app.post('/api/music/set-user-server', async (req, res) => {
+                if (await checkLoggedIn(req)) {
                     oauth.getUser(req.session.access_token).then(user => {
                         const guild = client.guilds.cache.get(req.body.target);
                         if (req.body.target == null || guild == null) {
@@ -445,20 +423,20 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/get-user-server', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/get-user-server', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         res.send({ status: "success", id: req.session.guild_id })
                     })
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/set-volume', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/set-volume', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         const queue = useQueue(req.session.guild_id);
                         if (queue == null) {
@@ -481,10 +459,10 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/autocomplete', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/autocomplete', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     if (req.session.isInGuild) {
                         oauth.getUser(req.session.access_token).then(user => {
                             if (req.body.query == null || req.body.query.length < 0 || typeof req.body.query !== "string" || req.body.query.length > 100) {
@@ -514,10 +492,10 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/play', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/play', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     if (req.session.isInGuild) {
                         oauth.getUser(req.session.access_token).then(user => {
                             if (req.body.query == null || req.body.query.length < 0 || typeof req.body.query !== "string" || req.body.query.length > 100) {
@@ -554,10 +532,10 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
 
-            app.post('/api/music/remove-from-queue', (req, res) => {
-                if (checkLoggedIn(req) || req.session.guild_id != null) {
+            app.post('/api/music/remove-from-queue', async (req, res) => {
+                if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         const queue = useQueue(req.session.guild_id);
                         if (queue == null) {
@@ -585,13 +563,27 @@ module.exports = {
                 } else {
                     res.send({ status: "authorisationError" });
                 }
-            })
+            });
+
+            async function checkLoggedIn(req) {
+                let validAuth = oauth.getUser(req.session.access_token)
+                    .then(res => { 
+                        if (req.session.token_expiration === undefined || new Date().getTime() / 1000 > req.session.token_expiration) {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    })
+                    .catch(err => { return false; });
+
+                return validAuth;
+            }
 
             app.listen(process.env.PORT, () => {
                 console.log(`${'[DASHBOARD]'.cyan} Dashboard server listening on ${process.env.PORT} (${process.env.REDIRECT}/)`);
             });
         } catch (e) {
-            console.log(`${'[DASHBOARD]'.cyan} ${'[ERROR]'.red} Bard faced the following error while trying to configure the dashboard:\n${e}`)
+            console.log(`${'[DASHBOARD]'.cyan} ${'[ERROR]'.red} Bard faced the following error while trying to configure the dashboard:\n${e}`);
         }
     }
 }
@@ -612,14 +604,6 @@ function getUserTheme(user_id, callback) {
             }
         }
     })
-}
-
-function checkLoggedIn(req) {
-    if (req.session.token_expiration === undefined || new Date().getTime() / 1000 > req.session.token_expiration) {
-        return false
-    } else {
-        return true
-    }
 }
 
 function checkUserInChannel(user_id, channel) {
