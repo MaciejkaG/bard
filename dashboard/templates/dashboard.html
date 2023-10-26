@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="/img/logo.png">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Montserrat:ital,wght@0,400;0,600;1,400;1,600&family=Raleway:ital,wght@1,500&family=Roboto+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -14,10 +14,10 @@
     <title>Bard Dashboard</title>
     <style>
         body {
-            --slider-fill-color: {{altColor}};
+            --slider-fill-color: {{altColour}};
             background: rgb(16, 16, 16);
-            background: -webkit-linear-gradient(to bottom, {{mainColor1}}, {{mainColor2}});
-            background: linear-gradient(to bottom, {{mainColor1}}, {{mainColor2}});
+            background: -webkit-linear-gradient(to bottom, {{mainColour1}}, {{mainColour2}});
+            background: linear-gradient(to bottom, {{mainColour1}}, {{mainColour2}});
             background-repeat: no-repeat;
             height: 100vh;
             color: white;
@@ -946,13 +946,92 @@
             <button onclick="window.open('[[URL]]', '_blank')" class="tippyButton openSourceButton">{{openSource}}</button>
         </div>
     </div>
+    <div id="themeTippyTemplate" style="display: none;">
+        <div style="border-radius:15px;height:9rem;width:16rem;padding:0.5rem;box-sizing:border-box;background:linear-gradient(to bottom, [[COLOUR1]], [[COLOUR2]]);">
+            <div style="border-radius:100%;width:1.25rem;height:1.25rem;margin:0;background: [[COLOUR3]];"></div>
+        </div>
+    </div>
     <script>
+
+        new EventSource('/api/sse/track-data').addEventListener('trackData', function (event) {
+            let data = JSON.parse(event.data);
+
+            if (data.status === "success") {
+                let track = data.track;
+                if (track.paused) {
+                    $('#pause img').attr("src", "/img/play-black.svg")
+                } else {
+                    $('#pause img').attr("src", "/img/pause.svg")
+                }
+                $('#currentTrackTitle').html(track.title);
+                $('#currentTrackAuthor').html(track.author);
+                const progressSlider = document.querySelector('[slider-id="progressSlider"]');
+                progressSlider.trackLength = Math.floor(track.durationS);
+                progressSlider.setValue(track.progress);
+                const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
+                volumeSlider.setValue(track.volume);
+                $('.pbContainer').css({ 'transform': 'translateY(0)', 'pointer-events': 'all' });
+            } else {
+                $('.pbContainer').css({ 'transform': 'translateY(200%)', 'pointer-events': 'none' });
+            }
+        });
+
+        new EventSource('/api/sse/queue-data').addEventListener('queueData', function (event) {
+            let data = JSON.parse(event.data);
+
+            if (data.status === "success") {
+                let queueHTML = "";
+                for (let i = 0; i < data.tracks.length; i++) {
+                    const track = data.tracks[i];
+                    queueHTML += `<div class="position" id="${Math.random()}" data-url="${track.url}"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
+                }
+
+                $("#queue").html(queueHTML);
+                if (firstTimeLoading) {
+                    $(".queueBlock .position").animate({ opacity: 1 }, 500);
+                    firstTimeLoading = false;
+                }
+
+
+                queueTippyInstances.forEach(instance => {
+                    instance.destroy();
+                });
+                queueTippyInstances.length = 0;
+
+                const instances = tippy('.queueBlock .position', {
+                    allowHTML: true,
+                    trigger: "click",
+                    interactive: true,
+                    arrow: false,
+                    theme: "bardTippy",
+                    animation: "shift-toward-subtle",
+                    appendTo: "parent",
+                    content: (reference) => {
+                        const url = $(reference).attr('data-url');
+
+                        return $('#queueTippyTemplate').html().replaceAll("[[URL]]", url).replaceAll("[[ELEM_ID]]", reference.id);
+                    },
+                });
+                window.queueTippyInstances = queueTippyInstances.concat(instances);
+                $(".queueBlock .position").css('opacity', 1);
+            }
+        });
+
         window.tippyInstances = [];
         window.queueTippyInstances = [];
 
-        var queueUpdateInterval;
-
         window.onload = function() {
+            tippy('.themes .themeList .theme.unactive', {
+                allowHTML: true,
+                arrow: false,
+                placement: "right",
+                theme: "bardTippy",
+                animation: "shift-toward-subtle",
+                content: (reference) => {
+                    return $('#themeTippyTemplate').html().replaceAll("[[COLOUR1]]", $(reference).attr("data-colour1")).replaceAll("[[COLOUR2]]", $(reference).attr("data-colour2")).replaceAll("[[COLOUR3]]", $(reference).attr("data-colour3"));
+                },
+            });
+
             const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
             const progressSlider = document.querySelector('[slider-id="progressSlider"]');
             $.post("/api/music/get-servers", function (data, status) {
@@ -966,16 +1045,18 @@
 
                     var serverId = "";
 
-                    volumeSlider.style.setProperty("--slider-fill-color", "{{altColor}}")
+                    volumeSlider.style.setProperty("--slider-fill-color", "{{altColour}}")
 
                     $.post("/api/music/get-user-server", function (data, status) {
                         if (status === "success" && data.status === "success") {
-                            $('.center .cover').css('animation', 'startAnimation ease 2s 1');
-                            $('.center .cover').css('width', '0');
-                            $('.center .cover').css('height', '0');
-                            $('.center .cover').css('opacity', '0');
-                            $('.center .cover').css('border-radius', '10px');
-                            $('.center .cover img').css('opacity', '0');
+                            $('.center .cover').css({
+                                'animation': 'startAnimation ease 2s 1',
+                                'width': 0,
+                                'height': 0,
+                                'opacity': 0,
+                                'border-radius': '10px'
+                            })
+                            $('.center .cover img').css('opacity', 0);
 
                             if (!data.id) {
                                 setTimeout(() => {
@@ -1014,14 +1095,18 @@
         }
 
         function logOut() {
-            $('.center .cover').css('transition', 'opacity 0.5s');
-            $('.center .cover').css('width', '100vw');
-            $('.center .cover').css('height', '100vh');
-            $('.center .cover').css('opacity', '1');
-            $('.center .cover img').css('animation', 'none');
-            $('.center .cover img').css('transition', 'none');
-            $('.center .cover img').css('opacity', '1');
-            $('.center .cover img').css('animation', 'loading 1s infinite ease');
+            $('.center. cover').css({
+                'transition': 'opacity 0.5s',
+                'width': '100vw',
+                'height': '100vh',
+                'opacity': 1
+            })
+            $('.center .cover img').css({
+                'animation': 'none',
+                'transition': 'none',
+                'opacity': 1,
+                'animation': 'loading 1s infinite ease'
+            })
             $.post("/api/music/log-out", function (data, status) {
                 if (status === "success" && data.status === "success") {
                     setTimeout(() => {
@@ -1043,9 +1128,8 @@
         }
 
         function openServerChangeWindow() {
-            $('.serverSelectorContainer .serverSelectorWindow').css("opacity", 1);
+            $('.serverSelectorContainer .serverSelectorWindow').css({ "opacity": 1, "pointer-events": "all", "transform": "translateY(0)" });
             $('.serverSelectorContainer').css({"opacity": "1", "pointer-events": "all"});
-            $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "all", "transform": "translateY(0)" });
         }
 
         var firstServerChange = true;
@@ -1068,6 +1152,9 @@
 
                         $('.serverSelectorContainer .serverSelectorWindow').css({ "pointer-events": "all", "opacity": "1" });
                     } else {
+                        const progressSlider = document.querySelector('[slider-id="progressSlider"]');
+                        const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
+
                         $('.serverSelectorContainer').css({ "opacity": "0", "pointer-events": "none" })
                         $('.serverSelectorContainer .serverSelectorWindow').css({ "transform": "translateY(10%)", "pointer-events": "none" })
 
@@ -1083,25 +1170,17 @@
                         }).showToast();
 
                         updateCurrentChannel();
-                        updateCurrentTrack();
-                        updateQueue();
                         updateLyrics();
 
                         if (firstServerChange) {
                             firstServerChange = false;
 
                             setInterval(updateCurrentChannel, 5000);
-                            setInterval(updateCurrentTrack, 1000);
-                            queueUpdateInterval = setInterval(updateQueue, 10000);
                             setInterval(updateLyrics, 10000);
 
                             $("#pause").click(function () {
                                 $.post("/api/music/pause", function (data, status) {
-                                    if (status === "success" && data.status === "success") {
-                                        clearInterval(queueUpdateInterval);
-                                        updateQueue();
-                                        queueUpdateInterval = setInterval(updateQueue, 10000);
-                                    } else {
+                                    if (status !== "success" || data.status !== "success") {
                                         Toastify({
                                             text: `{{connectionError}}<br>${data.status}`,
                                             duration: 3000,
@@ -1117,13 +1196,9 @@
                             })
                             $("#forwardSkip").click(function () {
                                 $.post("/api/music/skip-song", function (data, status) {
-                                    if (status === "success" && data.status === "success") {
-                                        clearInterval(queueUpdateInterval);
-                                        updateQueue();
-                                        queueUpdateInterval = setInterval(updateQueue, 10000);
-                                    } else {
+                                    if (status !== "success" || data.status !== "success") {
                                         Toastify({
-                                            text: `{{connectionError}}\n${data.status}`,
+                                            text: `{{connectionError}}<br>${data.status}`,
                                             duration: 3000,
                                             newWindow: true,
                                             close: true,
@@ -1225,31 +1300,6 @@
             });
         }
 
-        function updateCurrentTrack() {
-            $.post("/api/music/get-current-track", function (data, status) {
-                if (status === "success" && data.status === "success") {
-                    let track = data.track;
-                    if (track.paused) {
-                        $('#pause img').attr("src", "/img/play-black.svg")
-                    } else {
-                        $('#pause img').attr("src", "/img/pause.svg")
-                    }
-                    $('#currentTrackTitle').html(track.title);
-                    $('#currentTrackAuthor').html(track.author);
-                    const progressSlider = document.querySelector('[slider-id="progressSlider"]');
-                    progressSlider.trackLength = Math.floor(track.durationMS / 1000);
-                    progressSlider.setValue(track.progress / 1000);
-                    const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
-                    volumeSlider.setValue(data.track.volume);
-                    $('.pbContainer').css('transform', 'translateY(0)');
-                    $('.pbContainer').css('pointer-events', 'all');
-                } else {
-                    $('.pbContainer').css('transform', 'translateY(200%)');
-                    $('.pbContainer').css('pointer-events', 'none');
-                }
-            });
-        }
-
         var mouseOver = false;
 
         function updateLyrics() {
@@ -1271,69 +1321,22 @@
 
         function setLyricsPos(state) {
             if (state==="noTrack") {
-                $(".lyricsContainer").css("right", "calc(-30vw - 7rem)");
-                $(".center").css("opacity", "1");
-                $(".center").css("mouse-events", "all");
-                $(".lyricsContainer").css("pointer-events", "none");
+                $(".lyricsContainer").css({"right": "calc(-30vw - 7rem)", "pointer-events": "none"});
+                $(".center").css({"opacity": "1", "mouse-events": "all"});
                 mouseOver = false;
             } else if (state==="hidden") {
-                $(".lyricsContainer").css("right", "calc(-30vw - 1rem)");
-                $(".center").css("opacity", "1");
-                $(".center").css("mouse-events", "all");
-                $(".lyricsContainer").css("pointer-events", "all");
+                $(".lyricsContainer").css({"right": "calc(-30vw - 1rem)", "pointer-events": "all"});
+                $(".center").css({"opacity": "1", "mouse-events": "all"});
                 mouseOver = false;
             } else if (state==="shown") {
-                $(".lyricsContainer").css("right", "0");
-                $(".center").css("opacity", "0");
-                $(".center").css("mouse-events", "none");
-                $(".lyricsContainer").css("pointer-events", "all");
+                $(".lyricsContainer").css({"right": "0", "pointer-events": "all"});
+                $(".center").css({"opacity": "0", "mouse-events": "none"});
                 mouseOver = true;
 
             }
         }
 
         var firstTimeLoading = true;
-
-        function updateQueue() {
-            $.post("/api/music/get-queue", function (data, status) {
-                if (status==="success" && data.status==="success") {
-                    let queueHTML = "";
-                    for (let i = 0; i < data.tracks.length; i++) {
-                        const track = data.tracks[i];
-                        queueHTML += `<div class="position" id="${Math.random()}" data-url="${track.url}"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
-                    }
-
-                    $("#queue").html(queueHTML);
-                    if (firstTimeLoading) {
-                        $(".queueBlock .position").animate({ opacity: '1' }, 500);
-                        firstTimeLoading = false;
-                    }
-
-
-                    queueTippyInstances.forEach(instance => {
-                        instance.destroy();
-                    });
-                    queueTippyInstances.length = 0;
-
-                    const instances = tippy('.queueBlock .position', {
-                        allowHTML: true,
-                        trigger: "click",
-                        interactive: true,
-                        arrow: false,
-                        theme: "bardTippy",
-                        animation: "shift-toward-subtle",
-                        appendTo: "parent",
-                        content: (reference) => {
-                            const url = $(reference).attr('data-url');
-
-                            return $('#queueTippyTemplate').html().replaceAll("[[URL]]", url).replaceAll("[[ELEM_ID]]", reference.id);
-                        },
-                    });
-                    window.queueTippyInstances = queueTippyInstances.concat(instances);
-                    $(".queueBlock .position").css('opacity', '1');
-                }
-            });
-        }
 
         function removeFromQueue(elem_id) {
             let elem = document.getElementById(elem_id);
@@ -1363,9 +1366,6 @@
                             stopOnFocus: true,
                             className: "success"
                         }).showToast();
-                        clearInterval(queueUpdateInterval);
-                        updateQueue();
-                        queueUpdateInterval = setInterval(updateQueue, 10000);
                     }
                 }, error: function () {
                     Toastify({
@@ -1486,9 +1486,6 @@
                             stopOnFocus: true,
                             className: "success"
                         }).showToast();
-                        clearInterval(queueUpdateInterval);
-                        updateQueue();
-                        queueUpdateInterval = setInterval(updateQueue, 10000);
                     }
                 }, error: function () {
                     Toastify({
@@ -1506,15 +1503,19 @@
         }
 
         function changeTheme(num) {
-            $('.center .cover').css('transition', 'opacity 0.5s');
-            $('.center .cover').css('width', '100vw');
-            $('.center .cover').css('height', '100vh');
-            $('.center .cover').css('opacity', '1');
-            $('.center .cover').css('border-radius', '0');
-            $('.center .cover img').css('animation', 'none');
-            $('.center .cover img').css('transition', 'none');
-            $('.center .cover img').css('opacity', '1');
-            $('.center .cover img').css('animation', 'loading 1s infinite ease');
+            $('.center .cover').css({
+                'transition': 'opacity 0.5s',
+                'width': '100vw',
+                'height': '100vh',
+                'opacity': 1,
+                'border-radius': 0
+            })
+
+            $('.center .cover img').css({
+                'animation': 'loading 1s infinite ease',
+                'transition': 'none',
+                'opacity': 1
+            })
             $.ajax({
                 url: "/api/misc/change-theme", type: "POST", contentType: 'application/json', data: JSON.stringify({ target: num }), success: function (result, status) {
                     if (status !== "success" || result.status !== "success") {
@@ -1558,26 +1559,28 @@
             lastAutocompleteChange = Date.now();
             setTimeout(() => {
                 if (!status && autocompleteOn) {
-                    $('.suggestions span').css('animation', 'autocompleteSpan ease 1 1s');
-                    $('.suggestions span').css('opacity', '0');
-                    $('.suggestions').css('animation', 'autocomplete ease 1 1s');
-                    $('.suggestions').css('height', '0');
-                    $('.suggestions').css('padding', '0');
-                    $('.suggestions').css('box-shadow', 'none');
-                    $('.suggestions').css('top', '0');
-                    $('.suggestions').css('line-height', '0');
-                    $('.suggestions').css('pointer-events', 'none');
+                    $('.suggestions span').css({'animation': 'autocompleteSpan ease 1 1s', 'opacity': 0 });
+                    $('.suggestions').css({
+                        'animation': 'autocomplete ease 1 1s',
+                        'height': 0,
+                        'padding': 0,
+                        'box-shadow': 'none',
+                        'top': 0,
+                        'line-height': 0,
+                        'pointer-events': 'none'
+                    })
                     autocompleteOn = false;
                 } else if (status && !autocompleteOn) {
-                    $('.suggestions span').css('animation', 'autocompleteSpanR ease 1 1s');
-                    $('.suggestions span').css('opacity', '1');
-                    $('.suggestions').css('animation', 'autocompleteR ease 1 1s');
-                    $('.suggestions').css('height', '255px');
-                    $('.suggestions').css('padding', '20px');
-                    $('.suggestions').css('box-shadow', '0 0 30px 1px rgba(0, 0, 0, 0.6)');
-                    $('.suggestions').css('top', '1rem');
-                    $('.suggestions').css('line-height', '2rem');
-                    $('.suggestions').css('pointer-events', 'all');
+                    $('.suggestions span').css({'animation': 'autocompleteSpanR ease 1 1s', 'opacity': 1});
+                    $('.suggestions').css({
+                        'animation': 'autocompleteR ease 1 1s',
+                        'height': '255px',
+                        'padding': '20px',
+                        'box-shadow': '0 0 30px 1px rgba(0, 0, 0, 0.6)',
+                        'top': '1rem',
+                        'line-height': '2rem',
+                        'pointer-events': 'all' 
+                    })
                     autocompleteOn = true;
                 }
                 lastAutocompleteChange = Date.now();
