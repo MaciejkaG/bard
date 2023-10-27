@@ -9,7 +9,6 @@ const lib = require("../utils");
 const querystring = require("querystring");
 const fs = require('fs');
 const { useQueue, useMainPlayer } = require("discord-player");
-const genius = require("genius-lyrics");
 const colors = require('colors');
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database(path.join(__dirname, "../db/main.db"));
@@ -20,8 +19,8 @@ module.exports = {
         db.run("CREATE TABLE IF NOT EXISTS user_config (user_id VARCHAR(255) NOT NULL, theme_id INT NULL)");
 
         const app = express();
-        const oauth = new lib.oauth2.Client(process.env.BOT_CLIENT_ID, process.env.CLIENT_SECRET, `${process.env.REDIRECT}/api/auth/redirect`);
-        const geniusClient = new genius.Client(process.env.GENIUS_ACCESS_TOKEN);
+        const oauth = new lib.bjorn.Client(process.env.BOT_CLIENT_ID, process.env.CLIENT_SECRET, `${process.env.REDIRECT}/api/auth/redirect`);
+        const geniusClient = new lib.karaokee.Client(process.env.GENIUS_ACCESS_TOKEN);
 
         app.use(express.static(path.join(__dirname, 'public')));
         app.use(express.json());
@@ -140,6 +139,12 @@ module.exports = {
                 
             });
 
+            app.get('/change-log', (req, res) => {
+                let template = handlebars.compile(fs.readFileSync(path.join(__dirname, 'templates/changelog.html'), 'utf8'));
+
+                res.send(template());
+            })
+
             app.get('/login', async (req, res) => {
                 if (await checkLoggedIn(req)) {
                     res.redirect("/dashboard")
@@ -236,6 +241,10 @@ module.exports = {
             });
 
             app.post('/api/music/get-lyrics', async (req, res) => {
+                if (process.env.GENIUS_ACCESS_TOKEN==null) {
+                    res.send({ "status": "lyricsDisabled" });
+                    return;
+                }
                 if (await checkLoggedIn(req) || req.session.guild_id != null) {
                     oauth.getUser(req.session.access_token).then(user => {
                         const queue = useQueue(req.session.guild_id);
@@ -249,39 +258,25 @@ module.exports = {
                                     if (queue == null || queue.tracks.length === 0 || queue.currentTrack == null) {
                                         res.send({ "status": "noTrack" });
                                     } else {
-                                        (async () => {
-                                            try {
-                                                var searches;
-                                                try {
-                                                    searches = await geniusClient.songs.search(`${queue.currentTrack.author} ${queue.currentTrack.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\[.*?\]\s*/g, '')}`);
-                                                } catch {} finally {
-                                                    var song;
-                                                    if (searches==null || searches.length === 0) {
-                                                        searches = await geniusClient.songs.search(`${queue.currentTrack.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\[.*?\]\s*/g, '')}`);
-                                                        if (searches==null || searches.length === 0) {
-                                                            return res.send({ status: "noResults" });
-                                                        } else {
-                                                            song = searches[0];
-                                                            res.send({ "status": "success", "lyrics": await song.lyrics() });
-                                                        }
-                                                    } else {
-                                                        song = searches[0];
-                                                        res.send({ "status": "success", "lyrics": await song.lyrics() });
-                                                    }
-                                                }
-                                                
-                                            } catch (e) {
-                                                if (e.toString().includes("NoResultError") || e.toString().includes("No result was found")) {
-                                                    res.send({ status: "noResults" });
-                                                } else if (e instanceof SyntaxError && e.toString().includes("Unexpected token '<")) {
-                                                    console.log('[DASHBOARD] '.cyan + '[WARNING] '.yellow +"Seems like Genius asks for captcha. Please enter GENIUS_ACCESS_TOKEN .env variable to prevent that by using Genius's official API instead of scraping lyrics.\nFor more info please view https://github.com/codebois-dev/bard/wiki/Getting-started#use-genius-official-api-instead-of-scraping");
-                                                    res.send({ status: "serverException" });
+                                        geniusClient.search(`${queue.currentTrack.author} ${queue.currentTrack.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\[.*?\]\s*/g, '')}`)
+                                            .then((results) => {
+                                                if (results.length > 0) {
+                                                    geniusClient.getLyrics(results[0].url).then((lyrics => {
+                                                        res.send({ "status": "success", "lyrics": lyrics, "source": results[0].url });
+                                                    }));
                                                 } else {
-                                                    console.log(`${'[DASHBOARD]'.cyan} ${'[ERROR]'.red} Bard faced an error while fetching the lyrics:\n${e}`);
-                                                    res.send({ status: "unknownError" });
+                                                    geniusClient.search(`${queue.currentTrack.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*\[.*?\]\s*/g, '')}`)
+                                                        .then((results) => {
+                                                            if (results.length > 0) {
+                                                                geniusClient.getLyrics(results[0].url).then((lyrics => {
+                                                                    res.send({ "status": "success", "lyrics": lyrics, "source": results[0].url });
+                                                                }));
+                                                            } else {
+                                                                return res.send({ status: "noResults" });
+                                                            }
+                                                        });
                                                 }
-                                            }
-                                        })();
+                                            });
                                     }
                                 }
                             } else {

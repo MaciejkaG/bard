@@ -2,7 +2,7 @@ const { HTTPError } = require("discord.js");
 const fetch = require("node-fetch");
 
 const apiEndpoint = "https://discord.com/api/v10";
-const userAgent = "BardAuth Discord OAuth2 Wrapper (https://github.com/MaciejkaG/Bard)";
+const userAgent = "Bjorn by Bard (https://github.com/MaciejkaG/Bard)";
 
 module.exports = {
     Client: class {
@@ -29,13 +29,13 @@ module.exports = {
                     .then(response => response.json())
                     .then(jsonRes => {
                         if (jsonRes.error === undefined) {
-                            resolve(jsonRes)
+                            resolve(jsonRes);
                         } else {
-                            reject(jsonRes.error)
+                            reject(jsonRes.error);
                         }
                     })
                     .catch(err => reject(err));
-            })
+            });
         }
         getUser(accessToken) {
             return new Promise((resolve, reject) => {
@@ -47,11 +47,11 @@ module.exports = {
                         if (response.status!==200) {
                             reject(HTTPError(response.status));
                         }
-                        return response.json() 
+                        return response.json();
                     })
                     .then(res => resolve(res.user))
                     .catch(err => reject(err));
-            })
+            });
         }
         getUserGuilds(accessToken) {
             return new Promise((resolve, reject) => {
@@ -62,14 +62,7 @@ module.exports = {
                     .then(response => response.json())
                     .then(res => resolve(res))
                     .catch(err => reject(err));
-            })
-        }
-        getText(key) {
-            if (this.allText == null) {
-                throw new Error(`Language class has been improperly configured. (Unknown localisation module error)`);
-            } else {
-                return this.allText[key];
-            }
+            });
         }
     }
 };

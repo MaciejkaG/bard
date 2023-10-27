@@ -1,10 +1,9 @@
 {
-  "name": "simple-musicbot",
-  "version": "1.0.0",
-  "description": "Simple Discord music bot with a single server support intended for private use.<br>\r **This software is intended for private use only. We take no responsibility for how it is used. You may not use it for commercial closed-source projects as it is against the GPL v3 license (see: `LICENSE`).**",
+  "name": "bard",
+  "version": "1.5.0",
+  "description": "Simple Discord music bot with an intuitive web dashboard and Genius integration.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dash": "node dashboard/index.js"
   },
   "repository": {
@@ -19,15 +18,16 @@
   "homepage": "https://github.com/codebois-dev/simple-musicbot#readme",
   "dependencies": {
     "@discordjs/opus": "^0.9.0",
-    "@distube/ytdl-core": "^4.13.0",
+    "@distube/ytdl-core": "^4.13.2",
     "colors": "^1.4.0",
-    "discord-player": "^6.6.2",
-    "discord.js": "^14.12.1",
+    "discord-player": "^6.6.6",
+    "discord.js": "^14.13.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "handlebars": "^4.7.8",
+    "node-html-parser": "^6.1.11",
     "sqlite3": "^5.1.6",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.1"
   }
 }

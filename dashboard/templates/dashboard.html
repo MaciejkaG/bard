@@ -952,71 +952,6 @@
         </div>
     </div>
     <script>
-
-        new EventSource('/api/sse/track-data').addEventListener('trackData', function (event) {
-            let data = JSON.parse(event.data);
-
-            if (data.status === "success") {
-                let track = data.track;
-                if (track.paused) {
-                    $('#pause img').attr("src", "/img/play-black.svg")
-                } else {
-                    $('#pause img').attr("src", "/img/pause.svg")
-                }
-                $('#currentTrackTitle').html(track.title);
-                $('#currentTrackAuthor').html(track.author);
-                const progressSlider = document.querySelector('[slider-id="progressSlider"]');
-                progressSlider.trackLength = Math.floor(track.durationS);
-                progressSlider.setValue(track.progress);
-                const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
-                volumeSlider.setValue(track.volume);
-                $('.pbContainer').css({ 'transform': 'translateY(0)', 'pointer-events': 'all' });
-            } else {
-                $('.pbContainer').css({ 'transform': 'translateY(200%)', 'pointer-events': 'none' });
-            }
-        });
-
-        new EventSource('/api/sse/queue-data').addEventListener('queueData', function (event) {
-            let data = JSON.parse(event.data);
-
-            if (data.status === "success") {
-                let queueHTML = "";
-                for (let i = 0; i < data.tracks.length; i++) {
-                    const track = data.tracks[i];
-                    queueHTML += `<div class="position" id="${Math.random()}" data-url="${track.url}"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
-                }
-
-                $("#queue").html(queueHTML);
-                if (firstTimeLoading) {
-                    $(".queueBlock .position").animate({ opacity: 1 }, 500);
-                    firstTimeLoading = false;
-                }
-
-
-                queueTippyInstances.forEach(instance => {
-                    instance.destroy();
-                });
-                queueTippyInstances.length = 0;
-
-                const instances = tippy('.queueBlock .position', {
-                    allowHTML: true,
-                    trigger: "click",
-                    interactive: true,
-                    arrow: false,
-                    theme: "bardTippy",
-                    animation: "shift-toward-subtle",
-                    appendTo: "parent",
-                    content: (reference) => {
-                        const url = $(reference).attr('data-url');
-
-                        return $('#queueTippyTemplate').html().replaceAll("[[URL]]", url).replaceAll("[[ELEM_ID]]", reference.id);
-                    },
-                });
-                window.queueTippyInstances = queueTippyInstances.concat(instances);
-                $(".queueBlock .position").css('opacity', 1);
-            }
-        });
-
         window.tippyInstances = [];
         window.queueTippyInstances = [];
 
@@ -1169,6 +1104,70 @@
                             className: "success"
                         }).showToast();
 
+                        new EventSource('/api/sse/track-data').addEventListener('trackData', function (event) {
+                            let data = JSON.parse(event.data);
+
+                            if (data.status === "success") {
+                                let track = data.track;
+                                if (track.paused) {
+                                    $('#pause img').attr("src", "/img/play-black.svg")
+                                } else {
+                                    $('#pause img').attr("src", "/img/pause.svg")
+                                }
+                                $('#currentTrackTitle').html(track.title);
+                                $('#currentTrackAuthor').html(track.author);
+                                const progressSlider = document.querySelector('[slider-id="progressSlider"]');
+                                progressSlider.trackLength = Math.floor(track.durationS);
+                                progressSlider.setValue(track.progress);
+                                const volumeSlider = document.querySelector('[slider-id="volumeSlider"]');
+                                volumeSlider.setValue(track.volume);
+                                $('.pbContainer').css({ 'transform': 'translateY(0)', 'pointer-events': 'all' });
+                            } else {
+                                $('.pbContainer').css({ 'transform': 'translateY(200%)', 'pointer-events': 'none' });
+                            }
+                        });
+
+                        new EventSource('/api/sse/queue-data').addEventListener('queueData', function (event) {
+                            let data = JSON.parse(event.data);
+
+                            if (data.status === "success") {
+                                let queueHTML = "";
+                                for (let i = 0; i < data.tracks.length; i++) {
+                                    const track = data.tracks[i];
+                                    queueHTML += `<div class="position" id="${Math.random()}" data-url="${track.url}"><div class="left"><div title="${track.title}"><h1>${track.title}</h1></div><div title="${track.author}"><h2>${track.author}</h2></div></div><div class="right"><img src="${track.thumbnail}" alt="thumbnail"></div></div>`;
+                                }
+
+                                $("#queue").html(queueHTML);
+                                if (firstTimeLoading) {
+                                    $(".queueBlock .position").animate({ opacity: 1 }, 500);
+                                    firstTimeLoading = false;
+                                }
+
+
+                                queueTippyInstances.forEach(instance => {
+                                    instance.destroy();
+                                });
+                                queueTippyInstances.length = 0;
+
+                                const instances = tippy('.queueBlock .position', {
+                                    allowHTML: true,
+                                    trigger: "click",
+                                    interactive: true,
+                                    arrow: false,
+                                    theme: "bardTippy",
+                                    animation: "shift-toward-subtle",
+                                    appendTo: "parent",
+                                    content: (reference) => {
+                                        const url = $(reference).attr('data-url');
+
+                                        return $('#queueTippyTemplate').html().replaceAll("[[URL]]", url).replaceAll("[[ELEM_ID]]", reference.id);
+                                    },
+                                });
+                                window.queueTippyInstances = queueTippyInstances.concat(instances);
+                                $(".queueBlock .position").css('opacity', 1);
+                            }
+                        });
+
                         updateCurrentChannel();
                         updateLyrics();
 
@@ -1305,7 +1304,7 @@
         function updateLyrics() {
             $.post("/api/music/get-lyrics", function (data, status) {
                 if (status === "success" && data.status === "success") {
-                    $(".lyricsContainer .lyrics").html(data.lyrics.replace(/\n/g, "<br />").replace(/\[+([^\][]+)]+/g, '<span class="header">$1</span>'))
+                    $(".lyricsContainer .lyrics").html(data.lyrics.replace(/\n/g, "<br />").replace(/\[+([^\][]+)]+/g, '<span class="header">$1</span>')+`<br><span style="color: rgba(255, 255, 255, 0.6);margin-top: 2rem;display:block;"><a href="${data.source}" target="_blank" style="color: rgba(255, 255, 255, 0.8);">Powered by Genius</a><br>Delivered by Karaokee</span>`)
                     if (!mouseOver) {
                         setLyricsPos("hidden");
                     }
