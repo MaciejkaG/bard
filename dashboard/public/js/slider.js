@@ -266,7 +266,7 @@ class customSlider extends HTMLElement {
         if (this.sliderId === "progressSlider") {
             let counter1 = document.getElementById("counter1");
             let counter2 = document.getElementById("counter2");
-            let seconds = Math.floor(slider.value / slider.max * this.trackLength);
+            let seconds = Math.round(slider.value / slider.max * this.trackLength);
             let minutes = Math.floor(seconds / 60);
             let hours;
             if (this.trackLength > 3600) {
