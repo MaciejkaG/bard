@@ -45,7 +45,7 @@ module.exports = {
                 })
                     .then(response => { 
                         if (response.status!==200) {
-                            reject(HTTPError(response.status));
+                            reject(new HTTPError(response.status));
                         }
                         return response.json();
                     })
