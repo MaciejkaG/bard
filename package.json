@@ -1,6 +1,6 @@
 {
   "name": "bard",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Simple Discord music bot with an intuitive web dashboard and Genius integration.",
   "main": "index.js",
   "scripts": {
