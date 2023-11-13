@@ -20,6 +20,9 @@ const commands = [];
 const foldersPath = path.join(__dirname, 'cmd');
 const commandFolders = fs.readdirSync(foldersPath);
 
+client.commands = new Collection();
+dashboard.main(client);
+
 for (const folder of commandFolders) {
     const commandsPath = path.join(foldersPath, folder);
     const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -28,6 +31,7 @@ for (const folder of commandFolders) {
         const command = require(filePath);
         if ('data' in command && 'execute' in command) {
             commands.push(command.data.toJSON());
+            client.commands.set(command.data.name, command);
         } else {
             console.log(`${'[COMMANDS]'.magenta} ${'[WARNING]'.yellow} The command at ${filePath} is missing a required "data" or "execute" property.`);
         }
@@ -56,23 +60,6 @@ const rest = new REST().setToken(token);
     }
 })();
 
-client.commands = new Collection();
-dashboard.main(client);
-
-for (const folder of commandFolders) {
-    const commandsPath = path.join(foldersPath, folder);
-    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-    for (const file of commandFiles) {
-        const filePath = path.join(commandsPath, file);
-        const command = require(filePath);
-        if ('data' in command && 'execute' in command) {
-            client.commands.set(command.data.name, command);
-        } else {
-            console.log(`${'[COMMANDS]'.magenta} ${'[WARNING]'.yellow} The command at ${filePath} is missing a required "data" or "execute" property.`);
-        }
-    }
-}
-
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
 
@@ -98,7 +85,7 @@ client.on(Events.InteractionCreate, async interaction => {
 client.once(Events.ClientReady, c => {
     console.log(`${'[BOT]'.blue} Logged in as ${c.user.tag}`);
     if (client.guilds.cache.size>10) {
-        console.log(`${'[BOT]'.blue} ${'[WARNING]'.yellow} This instance of Bard is in more than 10 servers. Remember that we (as Codebois) take no responsibility for consequences of publicly hosting Bard.`)
+        console.log(`${'[BOT]'.blue} ${'[WARNING]'.yellow} This instance of Bard is in more than 10 servers. Remember that the creator of this bot takes no responsibility for consequences of publicly hosting Bard.`)
     }
 });
 

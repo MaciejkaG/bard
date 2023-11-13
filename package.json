@@ -29,5 +29,8 @@
     "node-html-parser": "^6.1.11",
     "sqlite3": "^5.1.6",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.53.0"
   }
 }

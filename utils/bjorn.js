@@ -64,5 +64,18 @@ module.exports = {
                     .catch(err => reject(err));
             });
         }
+        checkLoggedIn(req) {
+            let validAuth = this.getUser(req.session.access_token)
+                .then(res => {
+                    if (req.session.token_expiration === undefined || new Date().getTime() / 1000 > req.session.token_expiration) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                })
+                .catch(err => { return false; });
+
+            return validAuth;
+        }
     }
 };
