@@ -4,6 +4,7 @@ module.exports = function (app, client, __dirname, db, lib, lang, oauth) {
             oauth.getUser(req.session.access_token).then(user => {
                 res.send({ status: "success", id: req.session.guild_id })
             })
+            .catch(err => res.send({"status": "requestError"}));
         } else {
             res.send({ status: "authorisationError" });
         }

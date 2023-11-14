@@ -17,6 +17,7 @@ module.exports = function (app, client, __dirname, db, lib, lang, oauth) {
                     }
                 }
             })
+            .catch(err => res.send({"status": "requestError"}));
         } else {
             res.send({ status: "authorisationError" });
         }

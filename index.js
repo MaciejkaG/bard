@@ -5,7 +5,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { Player } = require('discord-player');
-const { SpotifyExtractor, SoundCloudExtractor, YouTubeExtractor } = require('@discord-player/extractor');
 const { REST, Routes } = require('discord.js');
 const colors = require('colors');
 

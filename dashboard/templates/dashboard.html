@@ -1129,8 +1129,10 @@
 
                         new EventSource('/api/sse/queue-data').addEventListener('queueData', function (event) {
                             let data = JSON.parse(event.data);
+                            
+                            let mayRefresh = queueTippyInstances.find((instance) => instance.state.isVisible);
 
-                            if (data.status === "success") {
+                            if (!mayRefresh && data.status === "success") {
                                 let queueHTML = "";
                                 for (let i = 0; i < data.tracks.length; i++) {
                                     const track = data.tracks[i];
@@ -1143,8 +1145,8 @@
                                     firstTimeLoading = false;
                                 }
 
-
                                 queueTippyInstances.forEach(instance => {
+                                    console.log(instance);
                                     instance.destroy();
                                 });
                                 queueTippyInstances.length = 0;
@@ -1157,6 +1159,13 @@
                                     theme: "bardTippy",
                                     animation: "shift-toward-subtle",
                                     appendTo: "parent",
+                                    onShow(instance) {
+                                        console.log("shown");
+                                        $(this).children("button").on('click', function() {
+                                            console.log("clicked");
+                                            instance.hide();
+                                        });
+                                    },
                                     content: (reference) => {
                                         const url = $(reference).attr('data-url');
 

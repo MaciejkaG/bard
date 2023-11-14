@@ -37,7 +37,8 @@ module.exports = function (app, client, __dirname, db, lib, lang, oauth, geniusC
                                                     }
                                                 });
                                         }
-                                    });
+                                    })
+                                    .catch(err => res.send({"status": "requestError"}));
                             }
                         }
                     } else {
@@ -45,6 +46,7 @@ module.exports = function (app, client, __dirname, db, lib, lang, oauth, geniusC
                     }
                 }
             })
+            .catch(err => res.send(lib.dash.constructMessagePage(lang.getText("authorisationError"), 2)));
         } else {
             res.send({ status: "authorisationError" });
         }

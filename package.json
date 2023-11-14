@@ -1,21 +1,18 @@
 {
   "name": "bard",
   "version": "1.5.1",
-  "description": "Simple Discord music bot with an intuitive web dashboard and Genius integration.",
+  "description": "Simple Discord music bot with an intuitive and beautiful web dashboard, Genius integration and multiple music sources available.",
   "main": "index.js",
-  "scripts": {
-    "dash": "node dashboard/index.js"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/codebois-dev/simple-musicbot.git"
+    "url": "git+https://github.com/MaciejkaG/Bard.git"
   },
-  "author": "MaciejkaG & Codebois team",
+  "author": "MaciejkaG",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/codebois-dev/simple-musicbot/issues"
+    "url": "https://github.com/MaciejkaG/Bard/issues"
   },
-  "homepage": "https://github.com/codebois-dev/simple-musicbot#readme",
+  "homepage": "https://github.com/MaciejkaG/Bard#readme",
   "dependencies": {
     "@discordjs/opus": "^0.9.0",
     "@distube/ytdl-core": "^4.13.2",
