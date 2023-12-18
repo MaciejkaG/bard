@@ -835,9 +835,34 @@
         .settings span.lightRed {
             border-bottom-color: rgb(217, 59, 59);
         }
+
+        .mobileCover {
+            display: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            position: fixed;
+            background-color: black;
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        @media only screen and (max-width: 1280px) {
+            .mobileCover {
+                display: flex;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="mobileCover">
+        <h1>Oops...</h1>
+        <h3>Sorry, Bard's dashboard is not available on mobile at the moment</h3>
+    </div>
     <span class="designerTag">Designed by Maciejka</span>
     <div class="center">
         
@@ -889,9 +914,9 @@
             </div>
             <div class="right">
                 <div class="volumeControls">
-                    <div class="loopControls">
+                    <!-- <div class="loopControls">
                         <span>Loop: <span id="loopMode">Queue</span></span>
-                    </div>
+                    </div> -->
                     <div class="volumeIconContainer">
                         <img src="/img/volume.svg" alt="volume">
                     </div>
